@@ -15,15 +15,15 @@ directory and point it at a local backend.
 ```bash
 # In one terminal: backend
 cd ../diplo-ai-be
-poe dev                  # uvicorn :8000
+poe dev                  # uvicorn :8421
 
 # In another terminal: frontend
 cd ../diplo-ai-fe
-python3 -m http.server 5173    # any static server works
+python3 -m http.server 8420    # any static server works
 ```
 
-Open `http://localhost:5173`. The FE talks to `http://localhost:8000` for
-HTTP and `ws://localhost:8000/ws/game` for the live stream — set in
+Open `http://localhost:8420`. The FE talks to `http://localhost:8421` for
+HTTP and `ws://localhost:8421/ws/game` for the live stream — set in
 `js/config.js`.
 
 ## Vite + Deno (planned)
@@ -31,7 +31,7 @@ HTTP and `ws://localhost:8000/ws/game` for the live stream — set in
 Once scaffolding lands:
 
 ```bash
-deno task dev            # Vite dev server on :5173 (HMR)
+deno task dev            # Vite dev server on :8420 (HMR)
 deno task build          # static assets to dist/
 ```
 

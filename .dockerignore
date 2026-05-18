@@ -1,0 +1,25 @@
+# Git
+.git/
+.gitignore
+
+# Deno
+.deno/
+
+# Vite output (rebuilt in image)
+dist/
+.vite/
+
+# Secrets & local config
+.env
+.env.local
+
+# Node — we don't use it but guard against accidents
+node_modules/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Docs (kept in repo, not in image)
+README.md

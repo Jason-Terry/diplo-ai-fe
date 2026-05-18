@@ -13,6 +13,8 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+*.swp
+*.log
 
 # Node — we don't use it, but guard against accidents
 node_modules/
