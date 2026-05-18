@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diplomacy AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <button id="logo-btn" class="logo-btn" onclick="showAboutModal()" title="About · click for project info & Diplomacy rules" aria-label="About">
+                <span class="logo-mark">ⓘ</span>
+            </button>
+            <h1>Diplomacy AI</h1>
+        </div>
+        <div id="turn-info">
+            <span id="season">Spring</span>
+            <span id="year">1901</span>
+            <span class="separator">·</span>
+            <span id="phase">Movement</span>
+            <span id="round-indicator" class="round-pill hidden"></span>
+            <span id="thinking-chip" class="thinking-chip hidden"></span>
+        </div>
+        <div class="controls">
+            <button id="theme-btn" class="ghost-btn" onclick="toggleTheme()" title="Toggle theme">
+                <span id="theme-btn-label">☾ Dark</span>
+            </button>
+            <button id="layout-btn" class="ghost-btn" onclick="toggleLayoutMode()" title="Toggle Map ⇆ Dialog layout">
+                <span id="layout-btn-label">⇆ Dialog</span>
+            </button>
+            <button id="reset-btn" class="ghost-btn hidden" onclick="resetGame()">Reset</button>
+            <button id="action-btn" class="primary-btn" onclick="handleActionClick()">Initialize Game</button>
+        </div>
+    </header>
+
+    <div id="setup-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Game Setup</h2>
+            <p class="modal-sub">Pick a model and policy archetype for each power. Policies live in <code>config/policies.json</code>.</p>
+            <div id="power-configs"></div>
+            <div class="modal-actions">
+                <button class="ghost-btn" onclick="hideSetupModal()">Cancel</button>
+                <button class="primary-btn" onclick="startGame()">Start Simulation</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="unit-history-modal" class="modal hidden" onclick="if(event.target.id==='unit-history-modal')hideUnitHistory()"></div>
+
+    <div id="about-modal" class="modal hidden" onclick="if(event.target.id==='about-modal')hideAboutModal()">
+        <div class="modal-content about-modal">
+            <button class="modal-close" onclick="hideAboutModal()">×</button>
+            <h2>Diplomacy AI</h2>
+            <p class="about-blurb">
+                A research sandbox for watching LLM agents negotiate, betray, and ally their way through
+                a game of classic Diplomacy. Each of the seven Great Powers is driven by a model + policy
+                archetype combination; they exchange private letters, hold real-time calls, declare public
+                commitments, and submit orders that the engine adjudicates. Use it to compare how different
+                models behave under social pressure — who keeps their word, who plays the long game, who folds.
+            </p>
+            <hr class="about-rule">
+            <h3>Rules of Diplomacy — short version</h3>
+            <ul class="about-rules">
+                <li><strong>Goal:</strong> control 18 of 34 supply centers on a map of pre-WWI Europe. First to 18 wins; draws are possible.</li>
+                <li><strong>Powers:</strong> 7 Great Powers — Austria, England, France, Germany, Italy, Russia, Turkey. Each starts with 3 units (Russia 4) on its home supply centers.</li>
+                <li><strong>Units:</strong> <em>Armies</em> move on land; <em>Fleets</em> move on coasts and seas. Fleets can also <em>convoy</em> armies across water.</li>
+                <li><strong>Turn structure:</strong> Spring movement → Spring retreats → Fall movement → Fall retreats → Winter builds/disbands.</li>
+                <li><strong>Negotiation:</strong> before each movement phase, powers privately negotiate. Promises are non-binding — betrayal is the heart of the game.</li>
+                <li><strong>Orders:</strong> each unit gets one written order per phase: <em>Hold</em>, <em>Move</em>, <em>Support</em> (another unit's hold or move), or <em>Convoy</em>.</li>
+                <li><strong>No dice:</strong> conflicts resolve by strength — the side with more support wins. Equal strength causes a standoff; both units bounce.</li>
+                <li><strong>Supply centers:</strong> controlling a supply center in Fall lets you build (or requires you to disband) units in Winter, capped at the number of centers you own.</li>
+                <li><strong>Simultaneity:</strong> all orders are written secretly and resolved at once. There is no initiative, no first mover — only the social fabric.</li>
+            </ul>
+            <p class="about-credit">Built on the <a href="https://github.com/diplomacy/diplomacy" target="_blank" rel="noopener">diplomacy</a> Python engine. Models routed through LiteLLM.</p>
+        </div>
+    </div>
+
+    <div id="winner-banner" class="banner hidden">
+        <div>
+            <strong id="winner-name"></strong> has achieved 18 supply centers and won the game.
+        </div>
+        <button class="primary-btn" onclick="resetGame()">New Game</button>
+    </div>
+
+    <main id="app-layout" class="layout-map">
+        <aside id="left-column">
+            <section id="map-section">
+                <div id="map-container"></div>
+                <div id="map-legend"></div>
+            </section>
+            <aside id="roster-panel">
+                <h2>Powers</h2>
+                <div id="roster-list">
+                    <div class="empty-state">No game running. Click <em>Initialize Game</em>.</div>
+                </div>
+            </aside>
+        </aside>
+
+        <aside id="feed-panel">
+            <div id="feed-tabs"></div>
+            <div id="scratchpad-pane" class="hidden">
+                <div class="scratchpad-header" onclick="toggleScratchpad()">
+                    <span>Scratchpad</span>
+                    <span id="scratchpad-toggle">▾</span>
+                </div>
+                <pre id="scratchpad-body"></pre>
+            </div>
+            <div id="live-stream-container">
+                <div class="empty-state">System idle. Waiting to initialize.</div>
+            </div>
+        </aside>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
