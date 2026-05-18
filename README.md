@@ -7,36 +7,39 @@ over a WebSocket.
 Backend lives in [`diplo-ai-be`](https://github.com/Jason-Terry/diplo-ai-be).
 Canonical terminology in the backend's `docs/glossary.md`.
 
-## Run (current plain-static dev)
+## Setup
 
-The frontend is not yet wrapped in Vite + Deno. For now, serve it as a static
-directory and point it at a local backend.
+Install Deno once (`brew install deno` on macOS, or
+`curl -fsSL https://deno.land/install.sh | sh`). No Node, npm, or Bun
+required — Deno resolves Vite via `npm:` specifiers.
 
 ```bash
-# In one terminal: backend
-cd ../diplo-ai-be
+cp .env.example .env     # optional — only matters at build time
+```
+
+## Run
+
+```bash
+# In one terminal: backend (see ../diplo-ai-be)
 poe dev                  # uvicorn :8421
 
 # In another terminal: frontend
-cd ../diplo-ai-fe
-python3 -m http.server 8420    # any static server works
+deno task dev            # Vite dev server on :8420 (HMR)
 ```
 
-Open `http://localhost:8420`. The FE talks to `http://localhost:8421` for
-HTTP and `ws://localhost:8421/ws/game` for the live stream — set in
-`js/config.js`.
+Open `http://localhost:8420`. The FE talks to `http://localhost:8421` over
+HTTP + WebSocket — URLs read from `import.meta.env.VITE_API_BASE_URL` /
+`VITE_WS_BASE` (Vite inlines them at build time). When those are unset,
+`js/config.js` falls back to localhost.
 
-## Vite + Deno (planned)
-
-Once scaffolding lands:
+## Build
 
 ```bash
-deno task dev            # Vite dev server on :8420 (HMR)
-deno task build          # static assets to dist/
+deno task build          # static assets → dist/
+deno task preview        # serve dist/ on :8420 for smoke-testing
 ```
 
-Vite replaces `import.meta.env.VITE_API_BASE_URL` at build time, so deploys
-get the right Railway URLs baked in.
+The `dist/` output is what gets deployed to Railway (static host).
 
 ## Layout
 

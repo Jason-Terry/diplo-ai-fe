@@ -1,9 +1,12 @@
 // Diplomacy AI — frontend config.
 //
-// In split-repo local dev: FE is served on :8420, BE runs on :8421. Override
-// these via VITE_API_BASE_URL / VITE_WS_BASE once Vite is wired up; for now
-// the values are hardcoded for local dev. Production Railway URLs will be
-// stamped at build time.
+// Vite exposes build-time env via import.meta.env.VITE_*. When this file is
+// served by Vite (deno task dev or built dist/), those values get inlined.
+// When served plain (e.g. python -m http.server), import.meta.env is empty
+// and we fall back to localhost:8421 for the BE.
+//
+// Loaded as <script type="module">, so it runs before the deferred app.js.
 
-window.API_BASE_URL = 'http://localhost:8421';
-window.WS_BASE      = 'ws://localhost:8421';
+const env = (import.meta.env || {});
+window.API_BASE_URL = env.VITE_API_BASE_URL || 'http://localhost:8421';
+window.WS_BASE      = env.VITE_WS_BASE      || 'ws://localhost:8421';
