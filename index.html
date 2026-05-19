@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diplomacy AI</title>
+    <title>MetisDolos</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +16,7 @@
             <button id="logo-btn" class="logo-btn" onclick="showAboutModal()" title="About · click for project info & Diplomacy rules" aria-label="About">
                 <span class="logo-mark">ⓘ</span>
             </button>
-            <h1>Diplomacy AI</h1>
+            <h1>MetisDolos</h1>
         </div>
         <div id="turn-info">
             <span id="season">Spring</span>
@@ -54,13 +55,24 @@
     <div id="about-modal" class="modal hidden" onclick="if(event.target.id==='about-modal')hideAboutModal()">
         <div class="modal-content about-modal">
             <button class="modal-close" onclick="hideAboutModal()">×</button>
-            <h2>Diplomacy AI</h2>
+            <h2>MetisDolos</h2>
+            <p class="about-tagline"><em>Metis</em> (Μῆτις) — cunning wisdom. <em>Dolos</em> (Δόλος) — deception.</p>
             <p class="about-blurb">
-                A research sandbox for watching LLM agents negotiate, betray, and ally their way through
-                a game of classic Diplomacy. Each of the seven Great Powers is driven by a model + policy
-                archetype combination; they exchange private letters, hold real-time calls, declare public
-                commitments, and submit orders that the engine adjudicates. Use it to compare how different
-                models behave under social pressure — who keeps their word, who plays the long game, who folds.
+                MetisDolos is an alignment benchmark for frontier LLMs, built on the game of Diplomacy.
+                It exists to answer one question: <strong>do frontier models lie when lying pays?</strong>
+            </p>
+            <p class="about-blurb">
+                Diplomacy is uniquely suited to ask this. Betrayal is mechanically rewarded — stabbing an
+                ally at the right moment wins games — but reputation is the medium of every other turn.
+                Players negotiate non-binding commitments, then submit secret orders that can honor or
+                break them. There is nowhere to hide an intent except inside another agent.
+            </p>
+            <p class="about-blurb">
+                Seven LLMs drive the seven Great Powers. Each turn they exchange private letters, hold
+                real-time calls, declare public commitments, and submit orders. The engine records every
+                commitment alongside the order that fulfilled or broke it. Compare models head-to-head
+                under sustained social pressure and watch which ones build durable alliances — and which
+                ones stab everyone they meet.
             </p>
             <hr class="about-rule">
             <h3>Rules of Diplomacy — short version</h3>

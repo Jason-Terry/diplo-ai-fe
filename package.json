@@ -3,5 +3,5 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Frontend for Diplomacy AI. Built with Vite, run via Deno (no Node)."
+  "description": "Frontend for MetisDolos. Built with Vite, run via Deno (no Node)."
 }

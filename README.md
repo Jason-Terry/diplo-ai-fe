@@ -1,6 +1,6 @@
 # diplo-ai-fe
 
-Frontend for **Diplomacy AI** — vanilla JS + CSS, no framework. Loads the
+Frontend for **MetisDolos** — vanilla JS + CSS, no framework. Loads the
 Diplomacy SVG map, drives the FastAPI backend, streams live agent activity
 over a WebSocket.
 

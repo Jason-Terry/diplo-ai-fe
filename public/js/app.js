@@ -1,4 +1,4 @@
-// Diplomacy AI — frontend controller.
+// MetisDolos — frontend controller.
 
 // API_BASE_URL / WS_BASE come from js/config.js. Default is same-origin so
 // the monorepo dev server keeps working with no further changes.

@@ -1,4 +1,4 @@
-// Diplomacy AI — frontend config.
+// MetisDolos — frontend config.
 //
 // Vite exposes build-time env via import.meta.env.VITE_*. When this file is
 // served by Vite (deno task dev or built dist/), those values get inlined.
