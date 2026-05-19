@@ -39,7 +39,24 @@ deno task build          # static assets → dist/
 deno task preview        # serve dist/ on :8420 for smoke-testing
 ```
 
-The `dist/` output is what gets deployed to Railway (static host).
+## Deploy (Railway)
+
+The repo deploys as-is from `main`:
+
+1. **New Project → Deploy from GitHub repo → `Jason-Terry/diplo-ai-fe`**
+2. Railway reads `railway.json` and builds with `Dockerfile`. Stage 1 runs
+   `deno task build`; stage 2 serves `dist/` via `jsr:@std/http/file-server`.
+3. **Environment variables** to set in the service's **Variables** tab
+   (these are baked into the build, so changing them re-triggers a deploy):
+   - `VITE_API_BASE_URL` — the deployed BE URL,
+     e.g. `https://diplo-ai-be-production.up.railway.app`
+   - `VITE_WS_BASE` — same host with `wss://` scheme,
+     e.g. `wss://diplo-ai-be-production.up.railway.app`
+4. **Networking → Generate Domain** to get the FE's public URL.
+5. Add that FE URL to the BE service's `CORS_ALLOWED_ORIGINS` so the BE
+   accepts cross-origin requests from it.
+
+Healthcheck hits `/` — the file server serves `index.html`.
 
 ## Layout
 
@@ -53,4 +70,8 @@ data/
   map.svg                standard Diplomacy SVG (we toggle the hidden
                          province layer and recolor in JS)
   map_layout.json        province metadata
+deno.json                tasks: dev / build / preview + npm:vite import map
+vite.config.js           port 8420 fixed
+Dockerfile               multi-stage build (Deno+Vite → Deno file_server)
+railway.json             Railway build/deploy config
 ```
