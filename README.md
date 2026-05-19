@@ -62,14 +62,16 @@ Healthcheck hits `/` — the file server serves `index.html`.
 
 ```
 index.html               app shell + modals (setup, about, unit history)
-css/style.css            dark + parchment themes
+css/style.css            dark + parchment themes (bundled by Vite)
 js/
-  config.js              API_BASE_URL / WS_BASE — only env-aware file
-  app.js                 state machine, WebSocket client, tabs, SVG map
-data/
-  map.svg                standard Diplomacy SVG (we toggle the hidden
+  config.js              env-aware module entry — Vite inlines
+                         import.meta.env.VITE_* at build time
+public/                  copied verbatim into dist/ — anything here is
+                         served as a static asset at the same path
+  js/app.js              state machine, WebSocket client, tabs, SVG map
+  data/map.svg           standard Diplomacy SVG (we toggle the hidden
                          province layer and recolor in JS)
-  map_layout.json        province metadata
+  data/map_layout.json   province metadata
 deno.json                tasks: dev / build / preview + npm:vite import map
 vite.config.js           port 8420 fixed
 Dockerfile               multi-stage build (Deno+Vite → Deno file_server)
