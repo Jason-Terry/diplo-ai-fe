@@ -6,7 +6,7 @@
 # so VITE_API_BASE_URL / VITE_WS_BASE flow through to the bundled JS.
 
 # ─── Stage 1: build ──────────────────────────────────────────────────────────
-FROM denoland/deno:2.1.4 AS builder
+FROM denoland/deno:2.7.14 AS builder
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN printf "VITE_API_BASE_URL=%s\nVITE_WS_BASE=%s\n" \
     && deno task build
 
 # ─── Stage 2: runtime ────────────────────────────────────────────────────────
-FROM denoland/deno:2.1.4 AS runtime
+FROM denoland/deno:2.7.14 AS runtime
 
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
