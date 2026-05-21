@@ -16,7 +16,7 @@
             if (e.key === 'Escape') aboutModalOpen.set(false);
         }}
     >
-        <div class="modal-panel max-w-2xl text-left">
+        <div class="modal-panel modal-xl text-left">
             <button
                 class="absolute top-3 right-3 text-fg-muted hover:text-fg"
                 onclick={() => aboutModalOpen.set(false)}

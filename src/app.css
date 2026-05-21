@@ -1,45 +1,99 @@
 @import 'tailwindcss';
 
-/* ---------- Theme tokens ---------- */
+/* ---------- Theme tokens — Solarized-PARCHMENT (warm) ----------------------
+   Apply Solarized's discipline (one design, two skins; matched accent hues;
+   same body face) to the parchment world: warm cream above, warm dark below.
+   Dark mode is a leather-journal complement to the light cream — not a
+   separate teal/cool theme.
+*/
 @theme {
-    /* Dark (default) — cool slate. */
-    --color-bg: oklch(0.18 0.015 250);
-    --color-bg-elev: oklch(0.22 0.018 250);
-    --color-bg-soft: oklch(0.26 0.018 250);
-    --color-fg: oklch(0.95 0.005 250);
-    --color-fg-muted: oklch(0.7 0.012 250);
-    --color-border: oklch(0.32 0.02 250);
-    --color-accent: oklch(0.72 0.16 250);
-    --color-accent-fg: oklch(0.18 0.015 250);
-    --color-danger: oklch(0.62 0.2 25);
+    /* DARK — warm walnut / aged-leather. Inverse-luminance of parchment. */
+    --color-bg: oklch(0.22 0.025 60);          /* deep coffee/walnut */
+    --color-bg-elev: oklch(0.28 0.028 65);
+    --color-bg-soft: oklch(0.34 0.03 68);
+    --color-fg: oklch(0.86 0.04 85);           /* vellum / aged paper */
+    --color-fg-muted: oklch(0.66 0.04 70);
+    --color-border: oklch(0.4 0.035 65);
+    --color-accent: oklch(0.62 0.14 45);       /* burnt sienna (same hue, brighter) */
+    --color-accent-fg: oklch(0.98 0.02 90);
+    --color-danger: oklch(0.6 0.2 25);
+
+    /* Map theme — dark walnut night-table. */
+    --map-sea-fill: #2a221c;
+    --map-land-fill: #3a2f25;
+    --map-stroke: rgba(230, 210, 175, 0.22);
+    --unit-stroke: #1a1410;
+
+    /* Power colors — used by both the roster pips and the unit markers. */
+    --power-england: #6ba9d5;
+    --power-france: #7c84e0;
+    --power-germany: #b0a89a;
+    --power-italy: #82c479;
+    --power-austria: #e88a7d;
+    --power-russia: #cba0d9;
+    --power-turkey: #e6c34a;
 
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
     --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
-    --font-body: var(--font-sans);
+    --font-body: var(--font-serif);
 }
 
-/* Parchment — warm cream / sepia. Body text shifts to Lora for the old-map
-   feeling; headings keep slightly tighter tracking. */
+/* LIGHT — Solarized-parchment cream. */
 [data-theme='parchment'] {
-    --color-bg: oklch(0.94 0.04 75);
-    --color-bg-elev: oklch(0.9 0.045 70);
-    --color-bg-soft: oklch(0.85 0.05 70);
-    --color-fg: oklch(0.28 0.06 50);
-    --color-fg-muted: oklch(0.46 0.05 55);
-    --color-border: oklch(0.7 0.06 65);
-    --color-accent: oklch(0.45 0.12 35);     /* sepia / burnt sienna */
-    --color-accent-fg: oklch(0.97 0.03 75);
+    --color-bg: oklch(0.94 0.04 88);           /* warm cream base */
+    --color-bg-elev: oklch(0.9 0.045 82);
+    --color-bg-soft: oklch(0.85 0.05 80);
+    --color-fg: oklch(0.3 0.055 50);           /* deep walnut */
+    --color-fg-muted: oklch(0.48 0.05 55);
+    --color-border: oklch(0.7 0.06 70);
+    --color-accent: oklch(0.46 0.13 38);       /* burnt sienna (same hue, deeper) */
+    --color-accent-fg: oklch(0.97 0.03 80);
     --color-danger: oklch(0.5 0.18 25);
 
-    --font-body: var(--font-serif);
+    --map-sea-fill: #faf3e0;
+    --map-land-fill: transparent;
+    --map-stroke: rgba(60, 46, 30, 0.35);
+    --unit-stroke: #2a1f10;
+
+    --power-england: #1c70b5;
+    --power-france: #4046a4;
+    --power-germany: #4a4a4a;
+    --power-italy: #3e7a2a;
+    --power-austria: #b22222;
+    --power-russia: #8b4789;
+    --power-turkey: #b58900;
+}
+
+/* Map SVG — labels, units, hover state. */
+#map-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+#map-svg path {
+    stroke: var(--map-stroke);
+    stroke-width: 0.6px;
+    transition: fill 0.4s ease;
+}
+.unit-marker text.unit-label {
+    fill: white;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+}
+.unit-marker.dislodged { opacity: 0.85; }
+.unit-marker:hover circle,
+.unit-marker:hover rect {
+    stroke-width: 3;
 }
 
 html {
     font-family: var(--font-body);
 }
 
-/* Keep buttons + UI chrome on the sans face even under parchment so the
-   serif lives where it reads best: prose, dialog, labels. */
+/* UI chrome stays sans — buttons, inputs, etc. read better as sans. The serif
+   lives where prose does: dialog panel content, About copy, etc. */
 button,
 input,
 select,
@@ -81,12 +135,21 @@ body {
 }
 
 .modal-backdrop {
-    @apply fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4;
+    @apply fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-6;
 }
 
 .modal-panel {
+    /* Default width is max-w-md; individual modals override with their own
+       max-w-* utility (About uses max-w-3xl, Setup uses max-w-2xl). */
     @apply relative w-full max-w-md rounded-lg border border-border bg-bg-elev p-6 shadow-xl;
+    max-height: min(85vh, 760px);
+    overflow-y: auto;
 }
+/* Per-modal width overrides — these must come AFTER .modal-panel so they
+   win the cascade against the base max-w-md. */
+.modal-panel.modal-md { max-width: 28rem; }
+.modal-panel.modal-lg { max-width: 42rem; }
+.modal-panel.modal-xl { max-width: 56rem; }
 
 .field-label {
     @apply block text-sm font-medium text-fg-muted mb-1;
@@ -98,4 +161,80 @@ body {
 
 .empty-state {
     @apply text-center text-fg-muted py-6 px-4 text-sm rounded-md border border-dashed border-border bg-bg-soft;
+}
+
+/* ---------- Roster panel ---------- */
+.roster {
+    @apply rounded-md border border-border bg-bg-elev p-2 overflow-y-auto;
+}
+.roster-title {
+    @apply flex items-center gap-2 text-xs font-semibold tracking-wider text-fg-muted uppercase px-1 py-2;
+    font-family: var(--font-sans);
+}
+.roster-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-accent);
+}
+.roster-list {
+    @apply flex flex-col gap-1.5;
+}
+.roster-item {
+    @apply flex items-center justify-between gap-2 rounded-md py-1.5 pl-2 pr-2 border border-border bg-bg;
+    border-left: 3px solid var(--power-color);
+}
+.roster-item.eliminated { opacity: 0.45; }
+.roster-power { min-width: 0; }
+.roster-name {
+    @apply font-bold text-sm;
+    color: var(--power-color);
+    font-family: var(--font-sans);
+}
+.roster-meta {
+    @apply text-xs text-fg-muted truncate;
+    max-width: 13rem;
+}
+.roster-stats {
+    @apply text-right text-xs shrink-0;
+    font-family: var(--font-sans);
+}
+.roster-sc { @apply text-fg; }
+.roster-sc b { @apply font-bold; }
+.roster-units { @apply text-fg-muted; }
+
+/* ---------- Phase chip (header) ----------
+   Old layout used colored words: season green-ish, year cream, phase amber.
+   Same idea, but tuned to the parchment/dark palette via Solarized accents. */
+.phase-chip {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-border text-sm;
+    background: var(--color-bg);
+    font-family: var(--font-serif);
+}
+.phase-season { color: oklch(0.6 0.16 130); font-weight: 600; }
+.phase-year { color: var(--color-fg); font-weight: 700; }
+.phase-sep { color: var(--color-fg-muted); }
+.phase-phase { color: oklch(0.68 0.14 80); font-weight: 600; }
+[data-theme='parchment'] .phase-season { color: oklch(0.5 0.16 130); }
+[data-theme='parchment'] .phase-phase  { color: oklch(0.55 0.14 70); }
+
+/* ---------- Feed tabs (DialogPanel) ----------
+   Restrained text-only tabs. Active tab gets the per-power tint via
+   --tab-color (set inline), or the global accent for "All". Bottom border
+   indicates active; subtle bg matches the surrounding panel surface. */
+.feed-tab {
+    @apply text-center py-2 text-sm font-semibold tracking-wide transition-colors;
+    color: var(--color-fg-muted);
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    --tab-color: var(--color-accent);
+}
+.feed-tab:hover {
+    color: var(--color-fg);
+}
+.feed-tab.active {
+    color: var(--color-fg);
+    background: var(--color-bg-elev);
+    border-bottom-color: var(--tab-color);
 }
