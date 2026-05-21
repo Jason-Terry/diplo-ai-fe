@@ -178,8 +178,11 @@ function applyTheme(theme) {
     document.body.classList.remove('theme-dark', 'theme-parchment');
     document.body.classList.add(theme === 'parchment' ? 'theme-parchment' : 'theme-dark');
     localStorage.setItem('theme', theme);
+    // Icon shows the theme you'll switch *to* on next click.
     const label = document.getElementById('theme-btn-label');
-    if (label) label.textContent = theme === 'parchment' ? '☼ Parchment' : '☾ Dark';
+    if (label) label.textContent = theme === 'parchment' ? '☾' : '☼';
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.title = theme === 'parchment' ? 'Switch to dark' : 'Switch to parchment';
 }
 
 function toggleLayoutMode() {
@@ -1396,7 +1399,8 @@ async function startGame() {
 }
 
 async function resetGame() {
-    if (!confirm('Leave this game and return to the games list?')) return;
+    // The button was renamed from "Reset" to "← Games" — it just returns to
+    // the landing list. Games persist on the server.
     navigateToLanding();
 }
 
