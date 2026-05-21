@@ -14,7 +14,6 @@ const MODEL_OPTIONS = [
 ];
 
 let policies = {};        // populated from /api/policies
-let phaseStep = 0;
 let gameState = null;
 let ws = null;
 let currentGameId = null;  // null while on the landing view
@@ -322,26 +321,25 @@ function syncActionButton() {
     const reset = document.getElementById('reset-btn');
     reset.classList.toggle('hidden', !gameState.initialized);
 
-    if (gameState.is_complete) {
-        phaseStep = 7;
+    if (gameState.is_complete || gameState.phase_step === 'complete') {
         setButton('Game Over', true);
         return;
     }
     if (!gameState.initialized) {
-        phaseStep = 0;
         setButton('Initialize Game', false);
         return;
     }
+    // The engine owns the phase_step — the FE just renders the right label
+    // for the next action. Order-step label depends on whether we're in a
+    // movement, retreat, or adjustment phase.
     const t = gameState.turn.type;
-    if (phaseStep === 0) phaseStep = t === 'M' ? 1 : 3;
-    if (phaseStep === 1 && t !== 'M') phaseStep = 3;
     const label = {
-        1: 'Run Negotiations',
-        3: t === 'A' ? 'Submit Builds/Disbands'
-            : t === 'R' ? 'Submit Retreats'
-            : 'Submit Orders',
-        5: 'Resolve Turn',
-    }[phaseStep];
+        negotiate: 'Run Negotiations',
+        orders: t === 'A' ? 'Submit Builds/Disbands'
+                : t === 'R' ? 'Submit Retreats'
+                : 'Submit Orders',
+        adjudicate: 'Resolve Turn',
+    }[gameState.phase_step];
     if (label) setButton(label, false);
 }
 
@@ -352,10 +350,12 @@ function setButton(text, disabled) {
 }
 
 function handleActionClick() {
-    if (phaseStep === 0) return showSetupModal();
-    if (phaseStep === 1) return runNegotiations();
-    if (phaseStep === 3) return runOrders();
-    if (phaseStep === 5) return runAdjudicate();
+    const step = gameState?.phase_step;
+    if (step === 'negotiate') return runNegotiations();
+    if (step === 'orders') return runOrders();
+    if (step === 'adjudicate') return runAdjudicate();
+    // Defensive: shouldn't happen — landing handles 'no game yet'.
+    if (!gameState?.initialized) return showSetupModal();
 }
 
 // ---------- Roster ----------
@@ -1404,42 +1404,32 @@ async function resetGame() {
 
 async function runNegotiations() {
     setButton('Agents negotiating…', true);
-    phaseStep = 2;
     try {
         await fetch(gamePath('/phase/negotiate'), { method: 'POST' });
-        await loadGameState();
-        phaseStep = 3;
-        syncActionButton();
     } catch (e) {
-        phaseStep = 1;
-        syncActionButton();
+        console.error(e);
     }
+    // loadGameState refreshes phase_step from the BE — the engine is the
+    // source of truth for what comes next, success or failure.
+    await loadGameState();
 }
 
 async function runOrders() {
     setButton('Agents submitting orders…', true);
-    phaseStep = 4;
     try {
         await fetch(gamePath('/phase/orders'), { method: 'POST' });
-        await loadGameState();
-        phaseStep = 5;
-        syncActionButton();
     } catch (e) {
-        phaseStep = 3;
-        syncActionButton();
+        console.error(e);
     }
+    await loadGameState();
 }
 
 async function runAdjudicate() {
     setButton('Resolving…', true);
-    phaseStep = 6;
     try {
         await fetch(gamePath('/phase/adjudicate'), { method: 'POST' });
-        await loadGameState();
-        phaseStep = gameState.turn.type === 'M' ? 1 : 3;
-        syncActionButton();
     } catch (e) {
-        phaseStep = 5;
-        syncActionButton();
+        console.error(e);
     }
+    await loadGameState();
 }
