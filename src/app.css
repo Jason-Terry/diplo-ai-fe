@@ -73,7 +73,22 @@
 #map-svg path {
     stroke: var(--map-stroke);
     stroke-width: 0.6px;
-    transition: fill 0.4s ease;
+    transition: fill 0.3s ease, filter 0.15s ease, fill-opacity 0.15s ease;
+    cursor: default;
+}
+/* Province hover — lift slightly. Only land provinces ([id^="a-z"][3]) get
+   the cursor + hover; the JS sets pointer-events on decoration layers. */
+#provinces > path:hover {
+    filter: brightness(1.12) saturate(1.1);
+    fill-opacity: 0.65 !important;
+    cursor: crosshair;
+}
+[data-theme='parchment'] #provinces > path:hover {
+    fill-opacity: 0.5 !important;
+}
+
+.unit-marker {
+    cursor: pointer;
 }
 .unit-marker text.unit-label {
     fill: white;
@@ -81,15 +96,34 @@
     font-size: 11px;
     font-weight: 700;
     pointer-events: none;
+    user-select: none;
 }
 .unit-marker.dislodged { opacity: 0.85; }
+.unit-marker circle,
+.unit-marker rect {
+    transition: stroke-width 0.12s ease, filter 0.12s ease;
+}
 .unit-marker:hover circle,
 .unit-marker:hover rect {
-    stroke-width: 3;
+    stroke-width: 3.5;
+    filter: brightness(1.15) drop-shadow(0 1px 4px rgba(0,0,0,0.35));
 }
 
 html {
     font-family: var(--font-body);
+}
+
+/* Game UI is not a document — don't let the cursor turn into a text caret
+   on labels, chips, roster names, etc. Inputs + textareas opt back in below. */
+body {
+    -webkit-user-select: none;
+    user-select: none;
+}
+input,
+textarea,
+[contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 /* UI chrome stays sans — buttons, inputs, etc. read better as sans. The serif
