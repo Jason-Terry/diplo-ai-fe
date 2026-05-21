@@ -140,7 +140,7 @@
     {/if}
 </Header>
 
-<main class="max-w-6xl mx-auto p-4">
+<main class="mx-auto p-4 max-w-[1800px]">
     {#if loading}
         <div class="empty-state">Loading game…</div>
     {:else if error}
@@ -152,8 +152,7 @@
         </div>
     {:else if game}
         <div
-            class="grid grid-cols-1 md:grid-cols-[220px_1fr_360px] gap-4"
-            style="height: calc(100vh - 120px); min-height: 600px;"
+            class="game-grid grid grid-cols-1 md:grid-cols-[200px_1fr_320px] gap-4 items-stretch"
         >
             <!-- Roster -->
             <aside class="roster">
@@ -184,8 +183,9 @@
                 </ul>
             </aside>
 
-            <!-- Map -->
-            <section class="min-h-[400px]">
+            <!-- Map — the natural aspect of the Diplomacy SVG (~1.35) drives the
+                 whole row height. Roster + DialogPanel align to this via items-stretch. -->
+            <section class="map-section">
                 <Map {game} />
             </section>
 

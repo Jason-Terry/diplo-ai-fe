@@ -163,6 +163,29 @@ body {
     @apply text-center text-fg-muted py-6 px-4 text-sm rounded-md border border-dashed border-border bg-bg-soft;
 }
 
+/* ---------- Game grid ---------- */
+/* The map's SVG is ~1.35:1. Pin the row height to whichever is smaller:
+   - 88vh (so we don't push below the fold on tall windows)
+   - middle-column width × (1 / 1.35) (so the map fills horizontally with
+     no vertical gap on wider windows)
+   On widths where the map can't fill horizontally even at full height,
+   the SVG fits-into and the row crops accordingly. */
+.game-grid {
+    height: min(88vh, calc((100vw - 200px - 320px - 3rem) / 1.35));
+    min-height: 540px;
+}
+.map-section {
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+}
+.map-section > div { /* the Map.svelte wrapper */
+    width: 100%;
+    height: 100%;
+}
+
 /* ---------- Roster panel ---------- */
 .roster {
     @apply rounded-md border border-border bg-bg-elev p-2 overflow-y-auto;
