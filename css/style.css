@@ -1159,3 +1159,51 @@ body.theme-parchment #map-section {
     }
     body { overflow: auto; }
 }
+
+/* ---------- Landing view ---------- */
+#landing-view {
+    max-width: 720px;
+    margin: 48px auto;
+    padding: 0 24px;
+}
+.landing-inner { display: flex; flex-direction: column; gap: 16px; }
+.landing-title { font-size: 1.4rem; margin: 0; }
+.landing-sub { color: var(--text-muted); margin: 0; font-size: 0.9rem; }
+.landing-actions { display: flex; gap: 8px; margin: 8px 0 4px; }
+.landing-games { display: flex; flex-direction: column; gap: 8px; }
+.landing-game {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.landing-game:hover {
+    border-color: var(--accent);
+    background: var(--surface);
+}
+.landing-game .game-id {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+.landing-game .game-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.landing-game .game-status {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+.landing-game .game-status.complete { color: var(--accent); border-color: var(--accent); }
