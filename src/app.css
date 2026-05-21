@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+
+/* ---------- Theme tokens ---------- */
+@theme {
+    /* Dark (default) — cool slate. */
+    --color-bg: oklch(0.18 0.015 250);
+    --color-bg-elev: oklch(0.22 0.018 250);
+    --color-bg-soft: oklch(0.26 0.018 250);
+    --color-fg: oklch(0.95 0.005 250);
+    --color-fg-muted: oklch(0.7 0.012 250);
+    --color-border: oklch(0.32 0.02 250);
+    --color-accent: oklch(0.72 0.16 250);
+    --color-accent-fg: oklch(0.18 0.015 250);
+    --color-danger: oklch(0.62 0.2 25);
+
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-body: var(--font-sans);
+}
+
+/* Parchment — warm cream / sepia. Body text shifts to Lora for the old-map
+   feeling; headings keep slightly tighter tracking. */
+[data-theme='parchment'] {
+    --color-bg: oklch(0.94 0.04 75);
+    --color-bg-elev: oklch(0.9 0.045 70);
+    --color-bg-soft: oklch(0.85 0.05 70);
+    --color-fg: oklch(0.28 0.06 50);
+    --color-fg-muted: oklch(0.46 0.05 55);
+    --color-border: oklch(0.7 0.06 65);
+    --color-accent: oklch(0.45 0.12 35);     /* sepia / burnt sienna */
+    --color-accent-fg: oklch(0.97 0.03 75);
+    --color-danger: oklch(0.5 0.18 25);
+
+    --font-body: var(--font-serif);
+}
+
+html {
+    font-family: var(--font-body);
+}
+
+/* Keep buttons + UI chrome on the sans face even under parchment so the
+   serif lives where it reads best: prose, dialog, labels. */
+button,
+input,
+select,
+textarea,
+.font-ui {
+    font-family: var(--font-sans);
+}
+
+body {
+    min-height: 100vh;
+    background: var(--color-bg);
+    color: var(--color-fg);
+}
+
+/* Small utility classes used by components. Tailwind handles most styling
+   inline; these are for things that recur or need pseudo-classes. */
+.btn-primary {
+    @apply rounded-md bg-accent text-accent-fg px-4 py-2 font-semibold transition-colors;
+}
+.btn-primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+.btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+.btn-ghost {
+    @apply rounded-md px-3 py-2 font-medium border border-border bg-bg-elev text-fg transition-colors;
+}
+.btn-ghost:hover {
+    background: var(--color-bg-soft);
+}
+
+.icon-btn {
+    @apply inline-flex items-center justify-center rounded-md w-9 h-9 border border-border bg-bg-elev text-fg transition-colors;
+}
+.icon-btn:hover {
+    background: var(--color-bg-soft);
+}
+
+.modal-backdrop {
+    @apply fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4;
+}
+
+.modal-panel {
+    @apply relative w-full max-w-md rounded-lg border border-border bg-bg-elev p-6 shadow-xl;
+}
+
+.field-label {
+    @apply block text-sm font-medium text-fg-muted mb-1;
+}
+
+.field-input {
+    @apply w-full rounded-md border border-border bg-bg px-3 py-2 text-fg focus:outline-none focus:border-accent;
+}
+
+.empty-state {
+    @apply text-center text-fg-muted py-6 px-4 text-sm rounded-md border border-dashed border-border bg-bg-soft;
+}

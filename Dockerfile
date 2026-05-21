@@ -1,6 +1,8 @@
 # Multi-stage build for diplo-ai-fe.
-# Stage 1 (builder): Deno + Vite produce a static dist/.
-# Stage 2 (runtime): same Deno image serves dist/ via the std file_server.
+# Stage 1 (builder): Deno installs npm deps and runs SvelteKit's build (Vite
+#   under the hood). adapter-static emits ./build/ with index.html as fallback.
+# Stage 2 (runtime): the same Deno image serves ./build/ via std/http/file-server
+#   with --single-page-app so /games/:id deep-links resolve to index.html.
 #
 # Railway exposes service variables as both build args and runtime env vars,
 # so VITE_API_BASE_URL / VITE_WS_BASE flow through to the bundled JS.
@@ -15,10 +17,10 @@ WORKDIR /app
 COPY deno.json package.json ./
 COPY deno.lock* ./
 
-# Pre-fetch npm:vite + transitive deps into the layer cache.
-RUN deno install --node-modules-dir=auto --allow-scripts npm:vite || true
+# Pre-install npm deps into the layer cache.
+RUN deno install --allow-scripts --node-modules-dir=auto || true
 
-# Now bring in the rest of the source.
+# Bring in the rest of the source.
 COPY . .
 
 # Build args — Railway provides service vars as ARGs automatically. Defaults
@@ -36,7 +38,7 @@ RUN printf "VITE_API_BASE_URL=%s\nVITE_WS_BASE=%s\n" \
 FROM denoland/deno:2.7.14 AS runtime
 
 WORKDIR /app
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/build ./build
 
 # Pre-cache the std file server so the first request is instant.
 RUN deno cache jsr:@std/http/file-server
@@ -44,5 +46,7 @@ RUN deno cache jsr:@std/http/file-server
 ENV PORT=8420
 EXPOSE 8420
 
-# `sh -c` so $PORT expands at runtime, not build time.
-CMD ["sh", "-c", "deno run --allow-net --allow-read jsr:@std/http/file-server ./dist --port ${PORT} --host 0.0.0.0"]
+# --single-page-app makes the file server fall back to index.html for unknown
+# paths so client-side routes (e.g. /games/:id) resolve. $PORT expands at
+# runtime, not at image-build time.
+CMD ["sh", "-c", "deno run --allow-net --allow-read jsr:@std/http/file-server ./build --port ${PORT} --host 0.0.0.0 --single-page-app"]
