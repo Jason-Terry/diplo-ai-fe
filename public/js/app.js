@@ -14,9 +14,47 @@ const MODEL_OPTIONS = [
 ];
 
 let policies = {};        // populated from /api/policies
-let phaseStep = 0;
 let gameState = null;
 let ws = null;
+let currentGameId = null;  // null while on the landing view
+
+// ---------- Router (hash-based: '/' = landing, '/games/:id' = game view) ----------
+
+function parseRoute() {
+    const h = window.location.hash || '';
+    const m = h.match(/^#\/games\/([A-Za-z0-9_\-]+)$/);
+    if (m) return { view: 'game', gameId: m[1] };
+    return { view: 'landing', gameId: null };
+}
+
+function navigateToGame(gameId) {
+    // setting hash triggers hashchange → route() picks it up
+    window.location.hash = `#/games/${gameId}`;
+}
+
+function navigateToLanding() {
+    window.location.hash = '#/';
+}
+
+async function route() {
+    const r = parseRoute();
+    if (r.view === 'game') {
+        if (currentGameId !== r.gameId) {
+            currentGameId = r.gameId;
+            await enterGame();
+        }
+    } else {
+        currentGameId = null;
+        await enterLanding();
+    }
+}
+
+// ---------- API path helpers ----------
+
+function gamePath(suffix) {
+    if (!currentGameId) throw new Error('gamePath called with no currentGameId');
+    return `${API}/api/games/${currentGameId}${suffix}`;
+}
 
 // Tab state
 let activeTab = 'ALL';
@@ -33,9 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyTheme(localStorage.getItem('theme') || 'dark');
     applyLayoutMode(localStorage.getItem('layoutMode') || 'map');
     await fetchPolicies();
-    await loadGameState();
-    renderTabs();
-    connectWebSocket();
+    await route();
 
     // Clicking the small map in dialog mode flips back to map mode
     document.getElementById('map-section').addEventListener('click', (e) => {
@@ -45,6 +81,89 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 });
+
+window.addEventListener('hashchange', () => {
+    route();
+});
+
+// ---------- View transitions ----------
+
+function showGameView() {
+    document.getElementById('landing-view').classList.add('hidden');
+    document.getElementById('app-layout').classList.remove('hidden');
+    document.getElementById('turn-info').classList.remove('hidden');
+    document.getElementById('action-btn').classList.remove('hidden');
+    document.getElementById('layout-btn').classList.remove('hidden');
+}
+
+function showLandingView() {
+    document.getElementById('app-layout').classList.add('hidden');
+    document.getElementById('landing-view').classList.remove('hidden');
+    document.getElementById('winner-banner').classList.add('hidden');
+    // Header bits that only make sense inside a game
+    document.getElementById('turn-info').classList.add('hidden');
+    document.getElementById('action-btn').classList.add('hidden');
+    document.getElementById('layout-btn').classList.add('hidden');
+    document.getElementById('reset-btn').classList.add('hidden');
+}
+
+async function enterGame() {
+    showGameView();
+    clearFeed();
+    await loadGameState();
+    if (!gameState) {
+        // Game not found — bounce back to landing
+        navigateToLanding();
+        return;
+    }
+    renderTabs();
+    connectWebSocket();
+}
+
+async function enterLanding() {
+    if (ws) { try { ws.close(); } catch { /* noop */ } ws = null; }
+    gameState = null;
+    showLandingView();
+    await renderLanding();
+}
+
+async function renderLanding() {
+    const host = document.getElementById('landing-games');
+    host.innerHTML = '<div class="empty-state">Loading games…</div>';
+    try {
+        const res = await fetch(`${API}/api/games`);
+        const data = await res.json();
+        const games = (data.games || []).sort((a, b) => (b.updated_at || 0) - (a.updated_at || 0));
+        if (!games.length) {
+            host.innerHTML = '<div class="empty-state">No games yet. <em>Start one above.</em></div>';
+            return;
+        }
+        host.innerHTML = games.map(g => {
+            const status = g.is_complete ? 'complete' : 'in-progress';
+            const winner = g.winner ? ` · winner: ${g.winner}` : '';
+            const updated = g.updated_at ? new Date(g.updated_at * 1000).toLocaleString() : '';
+            return `
+                <div class="landing-game" data-id="${g.game_id}">
+                    <div>
+                        <div class="game-id">${g.game_id}</div>
+                        <div class="game-meta">${g.turns || 0} turns${winner} · ${updated}</div>
+                    </div>
+                    <div class="game-status ${g.is_complete ? 'complete' : ''}">${status}</div>
+                </div>
+            `;
+        }).join('');
+        host.querySelectorAll('.landing-game').forEach(el => {
+            el.addEventListener('click', () => navigateToGame(el.dataset.id));
+        });
+    } catch (e) {
+        console.error(e);
+        host.innerHTML = '<div class="empty-state">Failed to load games.</div>';
+    }
+}
+
+function newGameFromLanding() {
+    showSetupModal();
+}
 
 function toggleTheme() {
     const cur = document.body.classList.contains('theme-parchment') ? 'parchment' : 'dark';
@@ -59,8 +178,11 @@ function applyTheme(theme) {
     document.body.classList.remove('theme-dark', 'theme-parchment');
     document.body.classList.add(theme === 'parchment' ? 'theme-parchment' : 'theme-dark');
     localStorage.setItem('theme', theme);
+    // Icon shows the theme you'll switch *to* on next click.
     const label = document.getElementById('theme-btn-label');
-    if (label) label.textContent = theme === 'parchment' ? '☼ Parchment' : '☾ Dark';
+    if (label) label.textContent = theme === 'parchment' ? '☾' : '☼';
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.title = theme === 'parchment' ? 'Switch to dark' : 'Switch to parchment';
 }
 
 function toggleLayoutMode() {
@@ -95,8 +217,16 @@ async function fetchPolicies() {
 }
 
 async function loadGameState() {
+    if (!currentGameId) {
+        gameState = null;
+        return;
+    }
     try {
-        const res = await fetch(`${API}/api/state`);
+        const res = await fetch(gamePath('/state'));
+        if (res.status === 404) {
+            gameState = null;
+            return;
+        }
         gameState = await res.json();
         renderTurnInfo();
         renderRoster();
@@ -194,26 +324,25 @@ function syncActionButton() {
     const reset = document.getElementById('reset-btn');
     reset.classList.toggle('hidden', !gameState.initialized);
 
-    if (gameState.is_complete) {
-        phaseStep = 7;
+    if (gameState.is_complete || gameState.phase_step === 'complete') {
         setButton('Game Over', true);
         return;
     }
     if (!gameState.initialized) {
-        phaseStep = 0;
         setButton('Initialize Game', false);
         return;
     }
+    // The engine owns the phase_step — the FE just renders the right label
+    // for the next action. Order-step label depends on whether we're in a
+    // movement, retreat, or adjustment phase.
     const t = gameState.turn.type;
-    if (phaseStep === 0) phaseStep = t === 'M' ? 1 : 3;
-    if (phaseStep === 1 && t !== 'M') phaseStep = 3;
     const label = {
-        1: 'Run Negotiations',
-        3: t === 'A' ? 'Submit Builds/Disbands'
-            : t === 'R' ? 'Submit Retreats'
-            : 'Submit Orders',
-        5: 'Resolve Turn',
-    }[phaseStep];
+        negotiate: 'Run Negotiations',
+        orders: t === 'A' ? 'Submit Builds/Disbands'
+                : t === 'R' ? 'Submit Retreats'
+                : 'Submit Orders',
+        adjudicate: 'Resolve Turn',
+    }[gameState.phase_step];
     if (label) setButton(label, false);
 }
 
@@ -224,10 +353,12 @@ function setButton(text, disabled) {
 }
 
 function handleActionClick() {
-    if (phaseStep === 0) return showSetupModal();
-    if (phaseStep === 1) return runNegotiations();
-    if (phaseStep === 3) return runOrders();
-    if (phaseStep === 5) return runAdjudicate();
+    const step = gameState?.phase_step;
+    if (step === 'negotiate') return runNegotiations();
+    if (step === 'orders') return runOrders();
+    if (step === 'adjudicate') return runAdjudicate();
+    // Defensive: shouldn't happen — landing handles 'no game yet'.
+    if (!gameState?.initialized) return showSetupModal();
 }
 
 // ---------- Roster ----------
@@ -934,13 +1065,18 @@ function renderCall(e) {
 // ---------- WebSocket ----------
 
 function connectWebSocket() {
-    ws = new WebSocket(`${WS}/ws/game`);
+    if (!currentGameId) return;
+    const id = currentGameId;
+    ws = new WebSocket(`${WS}/ws/games/${id}`);
     ws.onmessage = (evt) => {
         let data;
         try { data = JSON.parse(evt.data); } catch { return; }
         handleEvent(data);
     };
-    ws.onclose = () => setTimeout(connectWebSocket, 1000);
+    ws.onclose = () => {
+        // Only auto-reconnect if we're still on the same game
+        if (currentGameId === id) setTimeout(connectWebSocket, 1000);
+    };
 }
 
 function handleEvent(data) {
@@ -1245,73 +1381,59 @@ async function startGame() {
         };
     });
     try {
-        setButton('Initializing…', true);
-        await fetch(`${API}/api/start`, {
+        setButton('Creating…', true);
+        const res = await fetch(`${API}/api/games`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config),
         });
+        const data = await res.json();
+        if (!data.game_id) throw new Error('no game_id in response');
         hideSetupModal();
-        clearFeed();
-        await loadGameState();
-        phaseStep = 1;
-        syncActionButton();
+        // navigateToGame triggers hashchange → enterGame() takes over
+        navigateToGame(data.game_id);
     } catch (e) {
         console.error(e);
-        phaseStep = 0;
-        setButton('Initialize Game', false);
+        setButton('Start Simulation', false);
     }
 }
 
 async function resetGame() {
-    if (!confirm('Reset and abandon current game?')) return;
-    await fetch(`${API}/api/reset`, { method: 'POST' });
-    clearFeed();
-    await loadGameState();
-    phaseStep = 0;
-    syncActionButton();
+    // The button was renamed from "Reset" to "← Games" — it just returns to
+    // the landing list. Games persist on the server.
+    navigateToLanding();
 }
 
 // ---------- Phase actions ----------
 
 async function runNegotiations() {
     setButton('Agents negotiating…', true);
-    phaseStep = 2;
     try {
-        await fetch(`${API}/api/phase/negotiate`, { method: 'POST' });
-        await loadGameState();
-        phaseStep = 3;
-        syncActionButton();
+        await fetch(gamePath('/phase/negotiate'), { method: 'POST' });
     } catch (e) {
-        phaseStep = 1;
-        syncActionButton();
+        console.error(e);
     }
+    // loadGameState refreshes phase_step from the BE — the engine is the
+    // source of truth for what comes next, success or failure.
+    await loadGameState();
 }
 
 async function runOrders() {
     setButton('Agents submitting orders…', true);
-    phaseStep = 4;
     try {
-        await fetch(`${API}/api/phase/orders`, { method: 'POST' });
-        await loadGameState();
-        phaseStep = 5;
-        syncActionButton();
+        await fetch(gamePath('/phase/orders'), { method: 'POST' });
     } catch (e) {
-        phaseStep = 3;
-        syncActionButton();
+        console.error(e);
     }
+    await loadGameState();
 }
 
 async function runAdjudicate() {
     setButton('Resolving…', true);
-    phaseStep = 6;
     try {
-        await fetch(`${API}/api/phase/adjudicate`, { method: 'POST' });
-        await loadGameState();
-        phaseStep = gameState.turn.type === 'M' ? 1 : 3;
-        syncActionButton();
+        await fetch(gamePath('/phase/adjudicate'), { method: 'POST' });
     } catch (e) {
-        phaseStep = 5;
-        syncActionButton();
+        console.error(e);
     }
+    await loadGameState();
 }

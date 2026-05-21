@@ -13,6 +13,9 @@
 <body>
     <header>
         <div class="brand">
+            <button id="theme-btn" class="logo-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+                <span id="theme-btn-label" class="logo-mark">☾</span>
+            </button>
             <button id="logo-btn" class="logo-btn" onclick="showAboutModal()" title="About · click for project info & Diplomacy rules" aria-label="About">
                 <span class="logo-mark">ⓘ</span>
             </button>
@@ -27,13 +30,10 @@
             <span id="thinking-chip" class="thinking-chip hidden"></span>
         </div>
         <div class="controls">
-            <button id="theme-btn" class="ghost-btn" onclick="toggleTheme()" title="Toggle theme">
-                <span id="theme-btn-label">☾ Dark</span>
-            </button>
             <button id="layout-btn" class="ghost-btn" onclick="toggleLayoutMode()" title="Toggle Map ⇆ Dialog layout">
                 <span id="layout-btn-label">⇆ Dialog</span>
             </button>
-            <button id="reset-btn" class="ghost-btn hidden" onclick="resetGame()">Reset</button>
+            <button id="reset-btn" class="ghost-btn hidden" onclick="resetGame()" title="Back to games list">← Games</button>
             <button id="action-btn" class="primary-btn" onclick="handleActionClick()">Initialize Game</button>
         </div>
     </header>
@@ -97,6 +97,19 @@
         </div>
         <button class="primary-btn" onclick="resetGame()">New Game</button>
     </div>
+
+    <section id="landing-view" class="hidden">
+        <div class="landing-inner">
+            <h2 class="landing-title">Pick a game</h2>
+            <p class="landing-sub">Click a row to spectate, or start a new game of your own.</p>
+            <div class="landing-actions">
+                <button class="primary-btn" onclick="newGameFromLanding()">+ New Game</button>
+            </div>
+            <div id="landing-games" class="landing-games">
+                <div class="empty-state">Loading games…</div>
+            </div>
+        </div>
+    </section>
 
     <main id="app-layout" class="layout-map">
         <aside id="left-column">
