@@ -1,13 +1,18 @@
 # Deno — commit deno.lock for reproducible builds
 .deno/
 
-# Vite output (when scaffolding lands)
+# SvelteKit
+.svelte-kit/
+build/
+
+# Vite output (legacy from pre-SvelteKit shell)
 dist/
 .vite/
 
 # Env
 .env
 .env.local
+.env.production
 
 # Editor / OS
 .DS_Store
@@ -19,3 +24,6 @@ dist/
 # Node — we don't use it directly, but Deno's --node-modules-dir creates one
 # at runtime to satisfy npm packages that hard-code require('node_modules')
 node_modules/
+
+# Local triage scratch — never commit
+TROUBLESHOOTING.md
