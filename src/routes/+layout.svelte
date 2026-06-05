@@ -7,7 +7,10 @@
     import SignupModal from '$lib/components/SignupModal.svelte';
     import AboutModal from '$lib/components/AboutModal.svelte';
     import SetupModal from '$lib/components/SetupModal.svelte';
+    import ForgotPasswordModal from '$lib/components/ForgotPasswordModal.svelte';
+    import ResetPasswordModal from '$lib/components/ResetPasswordModal.svelte';
     import Toasts from '$lib/components/Toasts.svelte';
+    import { resetPasswordToken } from '$lib/stores/ui';
 
     let { children } = $props();
 
@@ -18,6 +21,14 @@
 
         // Handle the BE's email-verify redirect: /?verify=ok|expired|invalid
         const params = new URLSearchParams(window.location.search);
+
+        // Password-reset link landed us here with ?reset=<token>. Hand off
+        // to the reset modal and let it scrub the URL when done.
+        const resetToken = params.get('reset');
+        if (resetToken) {
+            resetPasswordToken.set(resetToken);
+        }
+
         const verify = params.get('verify');
         if (verify) {
             const messages: Record<string, [string, 'success' | 'error']> = {
@@ -42,4 +53,6 @@
 <SignupModal />
 <AboutModal />
 <SetupModal />
+<ForgotPasswordModal />
+<ResetPasswordModal />
 <Toasts />

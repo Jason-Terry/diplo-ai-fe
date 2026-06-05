@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { loginModalOpen, signupModalOpen, pushToast } from '$lib/stores/ui';
+    import { loginModalOpen, signupModalOpen, forgotPasswordModalOpen, pushToast } from '$lib/stores/ui';
     import { user } from '$lib/stores/user';
     import { authLogin } from '$lib/api';
     import { X } from 'lucide-svelte';
@@ -35,6 +35,11 @@
     function switchToSignup() {
         loginModalOpen.set(false);
         signupModalOpen.set(true);
+    }
+
+    function switchToForgot() {
+        loginModalOpen.set(false);
+        forgotPasswordModalOpen.set(true);
     }
 </script>
 
@@ -80,7 +85,12 @@
                     />
                 </div>
                 <div>
-                    <label class="field-label" for="login-pw">Password</label>
+                    <div class="flex justify-between items-baseline">
+                        <label class="field-label" for="login-pw">Password</label>
+                        <button type="button" class="about-link" onclick={switchToForgot} style="font-size: 0.72rem; padding: 0;">
+                            Forgot password?
+                        </button>
+                    </div>
                     <input
                         id="login-pw"
                         class="field-input"
@@ -94,7 +104,7 @@
                     <div class="text-danger text-sm">{error}</div>
                 {/if}
                 <div class="flex justify-between items-center mt-2">
-                    <button type="button" class="text-sm text-fg-muted hover:text-fg" onclick={switchToSignup}>
+                    <button type="button" class="about-link" onclick={switchToSignup}>
                         Need an account?
                     </button>
                     <button class="btn-primary" disabled={submitting}>

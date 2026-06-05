@@ -1,34 +1,57 @@
 <script lang="ts">
     import ThemeToggle from './ThemeToggle.svelte';
+    import LayoutToggle from './LayoutToggle.svelte';
     import UserMenu from './UserMenu.svelte';
     import { aboutModalOpen } from '$lib/stores/ui';
     import { Info } from 'lucide-svelte';
 
-    type Props = { gameId?: string | null };
-    let { gameId = null }: Props = $props();
+    type Props = {
+        gameId?: string | null;
+        showLayoutToggle?: boolean;
+        center?: import('svelte').Snippet;
+        actions?: import('svelte').Snippet;
+    };
+    let {
+        gameId = null,
+        showLayoutToggle = false,
+        center,
+        actions
+    }: Props = $props();
 </script>
 
-<header
-    class="flex items-center justify-between gap-4 px-4 py-3 border-b border-border bg-bg-elev"
->
-    <div class="flex items-center gap-2">
-        <ThemeToggle />
+<header class="app-header">
+    <div class="brand">
         <button
-            class="icon-btn"
+            class="logo-btn"
             onclick={() => aboutModalOpen.set(true)}
-            title="About MetisDolos"
+            title="About this project"
             aria-label="About"
         >
-            <Info size={18} />
+            <Info size={15} />
         </button>
-        <a href="/" class="font-bold text-xl tracking-tight hover:opacity-80">MetisDolos</a>
+        <a href="/" class="no-underline" style="text-decoration: none;">
+            <h1>Metis<span class="brand-accent">Dolos</span></h1>
+        </a>
+        <button class="about-link" onclick={() => aboutModalOpen.set(true)}>What is this?</button>
         {#if gameId}
             <span class="ml-2 text-xs text-fg-muted font-mono">/{gameId.slice(0, 12)}</span>
         {/if}
     </div>
 
-    <div class="flex items-center gap-3">
-        <slot />
+    <div class="phase-tracker">
+        {#if center}
+            {@render center()}
+        {/if}
+    </div>
+
+    <div class="controls">
+        {#if actions}
+            {@render actions()}
+        {/if}
+        {#if showLayoutToggle}
+            <LayoutToggle />
+        {/if}
+        <ThemeToggle />
         <UserMenu />
     </div>
 </header>

@@ -100,6 +100,20 @@ export function authResendVerification(): Promise<{ status: string }> {
     return api('/api/auth/resend-verification', { method: 'POST' });
 }
 
+export function authForgotPassword(email: string): Promise<{ status: string }> {
+    return api('/api/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+    });
+}
+
+export function authResetPassword(token: string, password: string): Promise<User> {
+    return api('/api/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, password })
+    });
+}
+
 // ---------- WebSocket ----------
 
 export function gameSocket(gameId: string): WebSocket {
