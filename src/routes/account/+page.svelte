@@ -1,5 +1,6 @@
 <script lang="ts">
     import Header from '$lib/components/Header.svelte';
+    import AccountNav from '$lib/components/AccountNav.svelte';
     import { user } from '$lib/stores/user';
     import { goto } from '$app/navigation';
     import { pushToast, loginModalOpen } from '$lib/stores/ui';
@@ -111,6 +112,8 @@
     </div>
 
     <h1 class="account-title">Account settings</h1>
+
+    <AccountNav />
 
     {#if !$user}
         <div class="empty-state">
@@ -239,16 +242,6 @@
             {/if}
         </section>
 
-        <!-- API keys placeholder -->
-        <section class="acc-card">
-            <header class="acc-card-header">
-                <Key size={16} /><h2>API keys</h2>
-            </header>
-            <p class="acc-card-sub">
-                Bring your own provider keys (Anthropic, OpenAI, Gemini…) so your
-                games run on your account. Coming soon.
-            </p>
-        </section>
     {/if}
 </main>
 

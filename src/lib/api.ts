@@ -139,6 +139,58 @@ export function authGithubStartUrl(next: string = '/'): string {
     return `${API_BASE_URL}/api/auth/github/start?${q}`;
 }
 
+// ---------- Account: catalog + API keys ----------
+
+export interface CatalogProvider {
+    id: string;
+    label: string;
+    models: Array<{ id: string; label: string; tier: string }>;
+}
+export interface CatalogModel {
+    id: string;
+    label: string;
+    tier: string;
+    provider: string;
+    provider_label: string;
+}
+export interface Catalog {
+    providers: CatalogProvider[];
+    available_models: CatalogModel[];
+}
+export interface ApiKeyOut {
+    id: string;
+    provider: string;
+    provider_label: string;
+    label: string;
+    last4: string;
+    created_at: number;
+    last_validated_at: number | null;
+    valid: boolean | null;
+}
+
+export function getCatalog(): Promise<Catalog> {
+    return api('/api/account/catalog');
+}
+
+export function listApiKeys(): Promise<ApiKeyOut[]> {
+    return api('/api/account/api-keys');
+}
+
+export function addApiKey(provider: string, key: string, label?: string): Promise<ApiKeyOut> {
+    return api('/api/account/api-keys', {
+        method: 'POST',
+        body: JSON.stringify({ provider, key, ...(label ? { label } : {}) })
+    });
+}
+
+export function revalidateApiKey(id: string): Promise<ApiKeyOut> {
+    return api(`/api/account/api-keys/${id}/validate`, { method: 'POST' });
+}
+
+export function deleteApiKey(id: string): Promise<void> {
+    return api(`/api/account/api-keys/${id}`, { method: 'DELETE' });
+}
+
 // ---------- WebSocket ----------
 
 export function gameSocket(gameId: string): WebSocket {
