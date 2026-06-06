@@ -1,8 +1,8 @@
 <script lang="ts">
     import { loginModalOpen, signupModalOpen, forgotPasswordModalOpen, pushToast } from '$lib/stores/ui';
     import { user } from '$lib/stores/user';
-    import { authLogin } from '$lib/api';
-    import { X } from 'lucide-svelte';
+    import { authLogin, authGithubStartUrl } from '$lib/api';
+    import { X, Github } from 'lucide-svelte';
 
     let email = $state('');
     let password = $state('');
@@ -66,6 +66,12 @@
                 <X size={20} />
             </button>
             <h2 id="login-title" class="text-xl font-bold mb-4">Sign in</h2>
+
+            <a class="sso-btn" href={authGithubStartUrl('/')}>
+                <Github size={16} /> Continue with GitHub
+            </a>
+            <div class="sso-divider"><span>or</span></div>
+
             <form
                 onsubmit={(e) => {
                     e.preventDefault();

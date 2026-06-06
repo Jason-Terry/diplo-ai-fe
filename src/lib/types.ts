@@ -68,6 +68,10 @@ export interface User {
     first_name: string;
     last_name: string;
     email_verified: boolean;
+    /** GitHub login if the user has linked GitHub; null/absent otherwise. */
+    github_login?: string | null;
+    /** True iff the user has a local password (i.e. can use Change password). */
+    has_password?: boolean;
 }
 
 export interface Policy {

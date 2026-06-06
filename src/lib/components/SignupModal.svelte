@@ -1,8 +1,8 @@
 <script lang="ts">
     import { loginModalOpen, signupModalOpen, pushToast } from '$lib/stores/ui';
     import { user } from '$lib/stores/user';
-    import { authRegister } from '$lib/api';
-    import { X } from 'lucide-svelte';
+    import { authRegister, authGithubStartUrl } from '$lib/api';
+    import { X, Github } from 'lucide-svelte';
 
     let first_name = $state('');
     let last_name = $state('');
@@ -65,6 +65,12 @@
             <p class="text-sm text-fg-muted mb-4">
                 We'll send you a verification link before you can start games.
             </p>
+
+            <a class="sso-btn" href={authGithubStartUrl('/')}>
+                <Github size={16} /> Continue with GitHub
+            </a>
+            <div class="sso-divider"><span>or sign up with email</span></div>
+
             <form
                 onsubmit={(e) => {
                     e.preventDefault();

@@ -2,7 +2,7 @@
     import { user } from '$lib/stores/user';
     import { loginModalOpen, signupModalOpen, pushToast } from '$lib/stores/ui';
     import { authLogout } from '$lib/api';
-    import { LogOut } from 'lucide-svelte';
+    import { LogOut, Settings } from 'lucide-svelte';
 
     async function logout() {
         try {
@@ -17,12 +17,15 @@
 
 {#if $user}
     <div class="flex items-center gap-2">
-        <span class="text-sm text-fg-muted">
+        <a href="/account" class="text-sm text-fg-muted hover:text-fg" style="text-decoration: none;">
             <span class="font-medium text-fg">@{$user.username}</span>
             {#if !$user.email_verified}
                 <span class="ml-1 text-xs text-danger" title="Email not verified">●</span>
             {/if}
-        </span>
+        </a>
+        <a class="icon-btn" href="/account" title="Account settings" aria-label="Account settings">
+            <Settings size={16} />
+        </a>
         <button class="icon-btn" onclick={logout} title="Sign out" aria-label="Sign out">
             <LogOut size={16} />
         </button>

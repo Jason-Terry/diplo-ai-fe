@@ -114,6 +114,31 @@ export function authResetPassword(token: string, password: string): Promise<User
     });
 }
 
+export function authUpdateProfile(patch: {
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+}): Promise<User> {
+    return api('/api/auth/me', { method: 'PUT', body: JSON.stringify(patch) });
+}
+
+export function authChangePassword(
+    current_password: string,
+    new_password: string
+): Promise<User> {
+    return api('/api/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ current_password, new_password })
+    });
+}
+
+/** Full-page navigation to the BE OAuth start endpoint. Returns nothing
+ *  (we never come back to JS land — the BE 302s to GitHub). */
+export function authGithubStartUrl(next: string = '/'): string {
+    const q = new URLSearchParams({ next }).toString();
+    return `${API_BASE_URL}/api/auth/github/start?${q}`;
+}
+
 // ---------- WebSocket ----------
 
 export function gameSocket(gameId: string): WebSocket {
