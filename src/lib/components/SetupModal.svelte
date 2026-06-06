@@ -188,8 +188,7 @@
             </button>
             <h2>Set the stage</h2>
             <p class="modal-sub">
-                Cast each of the seven Great Powers. Pick a preset to fill every
-                slot at once, then tweak rows individually.
+                Pick a preset to fill every slot, or set them yourself.
             </p>
 
             {#if loading}
@@ -214,7 +213,7 @@
 
                 {#if missingRequirements.length}
                     <div class="warn-card">
-                        <p>To start a custom game you'll need:</p>
+                        <p>To start a custom game, you need:</p>
                         <ul>
                             {#each missingRequirements as m}<li>{m}</li>{/each}
                         </ul>

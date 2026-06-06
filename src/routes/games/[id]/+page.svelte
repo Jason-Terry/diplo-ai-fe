@@ -630,9 +630,8 @@
                     <span class="hero-eyebrow">Fresh game</span>
                     <h2 class="hero-title">{game.turn.season} {game.turn.year}, <span class="hero-italic">about to begin</span>.</h2>
                     <p class="hero-blurb">
-                        Cast and the map are ready. Click below to start the first round of
-                        negotiations — the agents will exchange private letters before anyone
-                        commits to a move.
+                        The cast and map are ready. Start the first round of negotiations.
+                        The agents will exchange private letters before anyone commits to a move.
                     </p>
                     <button class="btn-primary hero-cta" onclick={nextAction} disabled={busy}>
                         {busy ? nextActionBusyLabel() : nextActionLabel()}

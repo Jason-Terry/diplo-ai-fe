@@ -124,7 +124,7 @@
             <div class="verify-banner">
                 <div class="verify-msg">
                     <Mail size={16} />
-                    <span>Your email isn't verified yet — verify it to create games.</span>
+                    <span>Verify your email so you can create games.</span>
                 </div>
                 <button class="btn-ghost small" onclick={resendVerify}>Resend</button>
             </div>
@@ -213,9 +213,9 @@
                     <ShieldAlert size={16} /><h2>No local password</h2>
                 </header>
                 <p class="acc-card-sub">
-                    You signed up via GitHub, so there's no password to change. You can
-                    set one through "Forgot password" on the sign-in screen — that will
-                    let you log in with email + password in addition to GitHub.
+                    You signed up with GitHub, so there's no password to change. To add one,
+                    use "Forgot password" on the sign-in screen. You'll then be able to sign
+                    in with email and password in addition to GitHub.
                 </p>
             </section>
         {/if}

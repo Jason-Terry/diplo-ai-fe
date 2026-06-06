@@ -19,7 +19,7 @@
             // same neutral message — no email-enumeration leak.
             pushToast(
                 'success',
-                "If that email is registered, we've sent a reset link. Check your inbox.",
+                'If that email is registered, the reset link is on its way.',
                 6000
             );
         } catch (e: any) {
@@ -56,7 +56,7 @@
             </button>
             <h2 id="forgot-title">Reset password</h2>
             <p class="modal-sub">
-                Enter your account email. We'll send a link you can use to choose a new password.
+                We'll send you a link to choose a new password.
             </p>
             <form
                 onsubmit={(e) => { e.preventDefault(); submit(); }}

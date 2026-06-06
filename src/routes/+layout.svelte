@@ -52,7 +52,7 @@
                 ok: ['Signed in with GitHub.', 'success'],
                 invalid_state: ['GitHub sign-in failed (state mismatch). Try again.', 'error'],
                 exchange_failed: ['GitHub sign-in failed during token exchange.', 'error'],
-                missing_email: ["GitHub didn't return a verified email — add one to your GitHub account and try again.", 'error'],
+                missing_email: ["GitHub didn't return a verified email. Add one to your GitHub account and try again.", 'error'],
                 not_configured: ['GitHub sign-in is not configured on this server.', 'error']
             };
             const [msg, kind] = ssoMessages[sso] ?? ['Unknown GitHub sign-in status', 'error'];

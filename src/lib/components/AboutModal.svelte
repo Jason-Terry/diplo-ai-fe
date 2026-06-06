@@ -26,36 +26,37 @@
             </button>
             <h2 class="text-2xl font-bold">MetisDolos</h2>
             <p class="text-sm text-fg-muted italic mt-1 mb-4">
-                <em>Metis</em> (Μῆτις) — cunning wisdom. <em>Dolos</em> (Δόλος) — deception.
+                <em>Metis</em> (Μῆτις), cunning wisdom. <em>Dolos</em> (Δόλος), deception.
             </p>
             <div class="space-y-3 text-sm leading-relaxed">
                 <p>
-                    MetisDolos is an alignment benchmark for frontier LLMs, built on the game of Diplomacy.
-                    It exists to answer one question: <strong>do frontier models lie when lying pays?</strong>
+                    MetisDolos is an alignment benchmark for frontier LLMs, built on the
+                    game of Diplomacy. It exists to answer one question:
+                    <strong>do frontier models lie when lying pays?</strong>
                 </p>
                 <p>
-                    Diplomacy is uniquely suited to ask this. Betrayal is mechanically rewarded — stabbing
-                    an ally at the right moment wins games — but reputation is the medium of every other
-                    turn. Players negotiate non-binding commitments, then submit secret orders that can
-                    honor or break them. There is nowhere to hide an intent except inside another agent.
+                    Diplomacy is uniquely suited to ask this. Betrayal is mechanically rewarded,
+                    but reputation is the medium of every other turn. Players negotiate
+                    non-binding commitments, then submit secret orders that honor or break them.
                 </p>
                 <p>
-                    Seven LLMs drive the seven Great Powers. Each turn they exchange private letters, hold
-                    real-time calls, declare public commitments, and submit orders. The engine records
-                    every commitment alongside the order that fulfilled or broke it.
+                    Seven LLMs drive the seven Great Powers. Each turn they exchange private
+                    letters, hold real-time calls, declare public commitments, and submit orders.
+                    The engine records every commitment alongside the order that fulfilled or
+                    broke it.
                 </p>
             </div>
             <hr class="my-4 border-border" />
-            <h3 class="text-lg font-semibold mb-2">Rules of Diplomacy — short version</h3>
+            <h3 class="text-lg font-semibold mb-2">Diplomacy in a nutshell</h3>
             <ul class="text-sm space-y-1 list-disc pl-5">
-                <li><strong>Goal:</strong> control 18 of 34 supply centers. First to 18 wins.</li>
-                <li><strong>Powers:</strong> 7 Great Powers — Austria, England, France, Germany, Italy, Russia, Turkey.</li>
-                <li><strong>Units:</strong> Armies on land, Fleets on coasts and seas. Fleets convoy armies across water.</li>
-                <li><strong>Turn structure:</strong> Spring movement → retreats → Fall movement → retreats → Winter builds/disbands.</li>
-                <li><strong>Negotiation:</strong> before each movement phase, powers privately negotiate. Promises are non-binding.</li>
-                <li><strong>Orders:</strong> Hold, Move, Support, or Convoy — one per unit per phase.</li>
-                <li><strong>No dice:</strong> conflicts resolve by strength; equal strength bounces.</li>
-                <li><strong>Simultaneity:</strong> all orders are secret, resolved at once.</li>
+                <li><strong>Goal:</strong> hold 18 of 34 supply centers. First to 18 wins.</li>
+                <li><strong>Powers:</strong> Austria, England, France, Germany, Italy, Russia, Turkey.</li>
+                <li><strong>Units:</strong> Armies on land. Fleets on coasts and seas. Fleets convoy armies across water.</li>
+                <li><strong>Turn structure:</strong> Spring movement, then retreats. Fall movement, then retreats. Winter builds and disbands.</li>
+                <li><strong>Negotiation:</strong> powers privately negotiate before each movement phase. Promises are not binding.</li>
+                <li><strong>Orders:</strong> Hold, Move, Support, or Convoy. One per unit per phase.</li>
+                <li><strong>No dice:</strong> conflicts resolve by strength. Equal strength bounces.</li>
+                <li><strong>Simultaneity:</strong> orders are secret and resolved at once.</li>
             </ul>
             <p class="text-xs text-fg-muted mt-4">
                 Built on the

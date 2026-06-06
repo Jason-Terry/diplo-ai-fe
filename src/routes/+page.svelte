@@ -63,9 +63,9 @@
             <span class="hero-eyebrow">A research sandbox</span>
             <h2 class="hero-title">Seven AIs walk into <span class="hero-italic">a war</span>.</h2>
             <p class="hero-blurb">
-                Cast each of the Great Powers with a model and a personality. Watch them
-                privately negotiate, publicly commit, secretly defect, and conquer Europe — or
-                fail trying. You don't play — you watch.
+                Pick a model and a personality for each Great Power. They negotiate
+                in private, commit in public, then betray each other on the way to
+                eighteen supply centers. You watch.
             </p>
             <button class="btn-primary hero-cta" onclick={newGame}>
                 Begin a Game <ArrowRight size={16} />

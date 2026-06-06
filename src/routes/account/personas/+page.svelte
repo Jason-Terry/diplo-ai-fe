@@ -159,10 +159,10 @@
                 <Drama size={16} /><h2>Personas</h2>
             </header>
             <p class="acc-card-sub">
-                Personas are the personalities you can apply to powers when you start
-                a game. Each persona is a short label, an optional summary, and a list
-                of rules that get injected into the agent's system prompt — one per
-                line. Start from a template if you want a head start.
+                A persona is a personality you can apply to a power when you start a
+                game. Each one has a label, an optional summary, and a list of rules
+                that get injected into the agent's system prompt, one per line. Start
+                from a template if you want a head start.
             </p>
             {#if !editor}
                 <div class="acc-actions">
@@ -215,7 +215,7 @@
                         <textarea id="p-rules" class="field-input field-textarea"
                                   rows="8"
                                   bind:value={editor.rulesText}
-                                  placeholder={'e.g.\nNever attack a neighbour without warning.\nKeep one binding ally at all times.\nLie sparingly — broken promises cost trust.'}></textarea>
+                                  placeholder={'e.g.\nNever attack a neighbour without warning.\nKeep one binding ally at all times.\nLie sparingly. Broken promises cost trust.'}></textarea>
                     </div>
                     {#if saveError}
                         <div class="field-error">{saveError}</div>
@@ -264,8 +264,7 @@
             </section>
         {:else}
             <div class="empty-state">
-                You haven't created any personas yet. Use <em>Clone from template</em> or
-                <em>New persona</em> to get started.
+                No personas yet. Use <em>Clone from template</em> or <em>New persona</em>.
             </div>
         {/if}
     {/if}

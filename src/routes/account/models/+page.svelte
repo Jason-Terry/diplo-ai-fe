@@ -145,10 +145,9 @@
                 <Key size={16} /><h2>Models</h2>
             </header>
             <p class="acc-card-sub">
-                Paste a provider API key once. Every model that key unlocks shows up
-                in the dropdown when you start a game. Keys are encrypted at rest
-                and never displayed back to you — only the last 4 characters so you
-                can tell them apart.
+                Paste a provider key once. Every model that key unlocks shows up
+                in the dropdown when you start a game. We store the encrypted key and
+                show you the last 4 characters, never the whole thing.
             </p>
         </section>
 
@@ -208,8 +207,8 @@
                 {#if availableProviders.length}
                     You can add a key for {availableProviders.map((p) => p.label).join(', ')}.
                 {:else}
-                    You've added a key for every supported provider — replace one by
-                    pasting a new key for the same provider here.
+                    You've added a key for every supported provider. Paste a new key for
+                    the same provider here to replace the existing one.
                 {/if}
             </p>
 
@@ -237,8 +236,7 @@
                            autocomplete="off" bind:value={keyText}
                            placeholder="sk-ant-…" required />
                     <div class="field-hint">
-                        We'll send one tiny request to {catalog?.providers.find((p) => p.id === provider)?.label || 'the provider'}
-                        to confirm the key works before saving.
+                        We test the key against {catalog?.providers.find((p) => p.id === provider)?.label || 'the provider'} before saving it.
                     </div>
                 </div>
                 {#if addError}

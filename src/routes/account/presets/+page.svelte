@@ -101,8 +101,8 @@
                 <Sparkles size={16} /><h2>Presets</h2>
             </header>
             <p class="acc-card-sub">
-                Presets fill all seven powers in the Setup modal at once. Save one
-                from the "Begin Game" screen after you've configured a roster you like.
+                A preset fills all seven powers at once. Save one from the Begin Game
+                screen after you've built a roster you like.
             </p>
         </section>
 
