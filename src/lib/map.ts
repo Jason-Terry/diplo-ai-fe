@@ -125,6 +125,82 @@ function setupLayers(svg: SVGSVGElement) {
         });
 }
 
+// ─── Province centers ───────────────────────────────────────────────────────
+//
+// The Diplomacy SVG bundles cartographer-placed "center" markers in
+// #province-centers — one <path id="xxxCenter"> per province whose `d`
+// attribute begins with the absolute coordinate where the unit marker
+// belongs. Using these instead of `getBBox().center` fixes drift on
+// irregularly-shaped provinces like Moscow (whose bbox center sits
+// well into the southern border because the province extends far
+// north-east).
+//
+// PROVINCE_CENTER_OVERRIDES nudges the canonical center for the
+// handful of provinces where it still reads wrong (label collisions,
+// SC dot overlap, etc.). dx/dy are SVG-coordinate offsets.
+
+const PROVINCE_CENTER_OVERRIDES: Record<string, { dx?: number; dy?: number }> = {
+    // Add entries here when we find a province that needs a nudge.
+};
+
+let _centerCache: Map<string, { x: number; y: number }> | null = null;
+
+function parseProvinceCenters(svg: SVGSVGElement): Map<string, { x: number; y: number }> {
+    if (_centerCache) return _centerCache;
+    const out = new Map<string, { x: number; y: number }>();
+    const group = svg.querySelector('#province-centers');
+    if (group) {
+        group.querySelectorAll<SVGPathElement>('path[id$="Center"]').forEach((node) => {
+            const id = node.id; // e.g. "mosCenter"
+            const code = id.replace(/Center$/, '').toLowerCase();
+            const d = node.getAttribute('d') || '';
+            // First coord pair after the leading m/M is the start point in
+            // absolute coordinates regardless of case (subsequent pairs
+            // following a lowercase `m` ARE relative, but the FIRST one is
+            // treated as absolute by the SVG spec).
+            const m = d.match(/^\s*[mM]\s*(-?[\d.]+)[,\s]+(-?[\d.]+)/);
+            if (m) out.set(code, { x: parseFloat(m[1]), y: parseFloat(m[2]) });
+        });
+    }
+    _centerCache = out;
+    return out;
+}
+
+/** Best-effort centerpoint for a province in SVG user-space coords.
+ *  Tries the canonical #province-centers marker first, falls back to
+ *  the polygon bbox center. Applies any registered nudge override. */
+export function provinceCenter(
+    svg: SVGSVGElement,
+    abbr: string
+): { x: number; y: number } | null {
+    const key = abbr.toUpperCase();
+    const svgId = (SVG_ID_ALIAS[key] || key).toLowerCase();
+    const centers = parseProvinceCenters(svg);
+
+    let center = centers.get(svgId);
+    if (!center) {
+        // Sea provinces and a few oddballs aren't in #province-centers; bbox
+        // of the polygon is the right fallback.
+        const node = selectProvince(svg, abbr);
+        if (!node) return null;
+        let bbox: DOMRect;
+        try {
+            bbox = (node as SVGGraphicsElement).getBBox();
+        } catch {
+            return null;
+        }
+        center = { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+    }
+    const override = PROVINCE_CENTER_OVERRIDES[key];
+    if (override) {
+        center = {
+            x: center.x + (override.dx ?? 0),
+            y: center.y + (override.dy ?? 0)
+        };
+    }
+    return center;
+}
+
 function attachProvinceTooltips(svg: SVGSVGElement) {
     svg.querySelectorAll('[id]').forEach((node) => {
         const el = node as SVGElement;
@@ -184,16 +260,10 @@ export function applyState(svg: SVGSVGElement, state: GameState) {
 
 function drawUnits(svg: SVGSVGElement, units: Unit[], dislodged: boolean) {
     units.forEach((unit) => {
-        const path = selectProvince(svg, unit.location);
-        if (!path) return;
-        let bbox: DOMRect;
-        try {
-            bbox = (path as SVGGraphicsElement).getBBox();
-        } catch {
-            return;
-        }
-        const cx = bbox.x + bbox.width / 2;
-        const cy = bbox.y + bbox.height / 2;
+        const center = provinceCenter(svg, unit.location);
+        if (!center) return;
+        const cx = center.x;
+        const cy = center.y;
 
         const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         group.setAttribute('class', `unit-marker ${dislodged ? 'dislodged' : ''}`);
