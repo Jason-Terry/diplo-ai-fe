@@ -1,8 +1,9 @@
 # Multi-stage build for diplo-ai-fe.
 # Stage 1 (builder): Deno installs npm deps and runs SvelteKit's build (Vite
 #   under the hood). adapter-static emits ./build/ with index.html as fallback.
-# Stage 2 (runtime): the same Deno image serves ./build/ via std/http/file-server
-#   with --single-page-app so /games/:id deep-links resolve to index.html.
+# Stage 2 (runtime): serve ./build/ via serve.ts (std/http/file-server +
+#   index.html fallback for unknown paths so /account and /games/:id deep
+#   links resolve to the SPA shell).
 #
 # Railway exposes service variables as both build args and runtime env vars,
 # so VITE_API_BASE_URL / VITE_WS_BASE flow through to the bundled JS.
@@ -39,14 +40,14 @@ FROM denoland/deno:2.7.14 AS runtime
 
 WORKDIR /app
 COPY --from=builder /app/build ./build
+COPY serve.ts ./serve.ts
 
 # Pre-cache the std file server so the first request is instant.
-RUN deno cache jsr:@std/http/file-server
+RUN deno cache serve.ts
 
 ENV PORT=8420
 EXPOSE 8420
 
-# --single-page-app makes the file server fall back to index.html for unknown
-# paths so client-side routes (e.g. /games/:id) resolve. $PORT expands at
-# runtime, not at image-build time.
-CMD ["sh", "-c", "deno run --allow-net --allow-read jsr:@std/http/file-server ./build --port ${PORT} --host 0.0.0.0 --single-page-app"]
+# serve.ts wraps serveDir with a 404→index.html fallback so SPA deep links
+# (/account, /games/:id, ...) hit the SvelteKit router instead of 404'ing.
+CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "serve.ts"]
