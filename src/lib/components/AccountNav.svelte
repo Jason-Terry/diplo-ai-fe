@@ -13,7 +13,7 @@
         { href: '/account',          label: 'Profile',  Icon: User },
         { href: '/account/models',   label: 'Models',   Icon: Cpu },
         { href: '/account/personas', label: 'Personas', Icon: Drama },
-        { href: '/account/presets',  label: 'Presets',  Icon: Sparkles, soon: true }
+        { href: '/account/presets',  label: 'Presets',  Icon: Sparkles }
     ];
 
     function active(href: string): boolean {

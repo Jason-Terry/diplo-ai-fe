@@ -34,13 +34,16 @@ export function listGames(): Promise<{ games: GameSummary[] }> {
     return api('/api/games');
 }
 
+/** BYOK game-create — fire either by preset (free-trial uses the special
+ *  `__free_trial__` preset_id) or by raw per-power slots. The BE rejects
+ *  any slots that reference a model the user doesn't have a key for, or
+ *  a persona id they don't own. */
 export function createGame(
-    agentsConfig: Record<string, { provider: string; policy: string }>
+    body:
+        | { preset_id: string }
+        | { slots: Record<string, { model_id: string; persona_id: string }> }
 ): Promise<{ game_id: string; status: string }> {
-    return api('/api/games', {
-        method: 'POST',
-        body: JSON.stringify({ agents_config: agentsConfig })
-    });
+    return api('/api/games', { method: 'POST', body: JSON.stringify(body) });
 }
 
 export function getGameState(gameId: string): Promise<GameState> {
@@ -246,6 +249,59 @@ export function updatePersona(
 
 export function deletePersona(id: string): Promise<void> {
     return api(`/api/account/personas/${id}`, { method: 'DELETE' });
+}
+
+// ---------- Account: presets ----------
+
+export const FREE_TRIAL_PRESET_ID = '__free_trial__';
+
+export interface PresetSlot {
+    model_id: string;
+    persona_id: string;
+}
+export interface Preset {
+    id: string;
+    label: string;
+    summary: string;
+    slots: Record<string, PresetSlot>;
+    created_at: number;
+    is_free_trial: boolean;
+    free_trial_used: boolean;
+}
+
+export function listPresets(): Promise<Preset[]> {
+    return api('/api/account/presets');
+}
+
+export function createPreset(
+    body: { label: string; summary?: string; slots: Record<string, PresetSlot> }
+): Promise<Preset> {
+    return api('/api/account/presets', {
+        method: 'POST',
+        body: JSON.stringify({
+            label: body.label,
+            summary: body.summary ?? '',
+            slots: body.slots
+        })
+    });
+}
+
+export function updatePreset(
+    id: string,
+    body: { label: string; summary?: string; slots: Record<string, PresetSlot> }
+): Promise<Preset> {
+    return api(`/api/account/presets/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            label: body.label,
+            summary: body.summary ?? '',
+            slots: body.slots
+        })
+    });
+}
+
+export function deletePreset(id: string): Promise<void> {
+    return api(`/api/account/presets/${id}`, { method: 'DELETE' });
 }
 
 // ---------- WebSocket ----------
