@@ -12,7 +12,7 @@
     const items: Item[] = [
         { href: '/account',          label: 'Profile',  Icon: User },
         { href: '/account/models',   label: 'Models',   Icon: Cpu },
-        { href: '/account/personas', label: 'Personas', Icon: Drama, soon: true },
+        { href: '/account/personas', label: 'Personas', Icon: Drama },
         { href: '/account/presets',  label: 'Presets',  Icon: Sparkles, soon: true }
     ];
 

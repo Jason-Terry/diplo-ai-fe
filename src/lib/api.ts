@@ -191,6 +191,63 @@ export function deleteApiKey(id: string): Promise<void> {
     return api(`/api/account/api-keys/${id}`, { method: 'DELETE' });
 }
 
+// ---------- Account: personas ----------
+
+export interface Persona {
+    id: string;
+    label: string;
+    summary: string;
+    rules: string[];
+    created_at: number;
+    updated_at: number;
+}
+
+export interface PersonaTemplate {
+    id: string;
+    label: string;
+    summary: string;
+    rules: string[];
+}
+
+export function listPersonaTemplates(): Promise<{ templates: PersonaTemplate[] }> {
+    return api('/api/account/persona-templates');
+}
+
+export function listPersonas(): Promise<Persona[]> {
+    return api('/api/account/personas');
+}
+
+export function createPersona(
+    body: { label: string; summary?: string; rules?: string[] }
+): Promise<Persona> {
+    return api('/api/account/personas', {
+        method: 'POST',
+        body: JSON.stringify({
+            label: body.label,
+            summary: body.summary ?? '',
+            rules: body.rules ?? []
+        })
+    });
+}
+
+export function updatePersona(
+    id: string,
+    body: { label: string; summary?: string; rules?: string[] }
+): Promise<Persona> {
+    return api(`/api/account/personas/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            label: body.label,
+            summary: body.summary ?? '',
+            rules: body.rules ?? []
+        })
+    });
+}
+
+export function deletePersona(id: string): Promise<void> {
+    return api(`/api/account/personas/${id}`, { method: 'DELETE' });
+}
+
 // ---------- WebSocket ----------
 
 export function gameSocket(gameId: string): WebSocket {
