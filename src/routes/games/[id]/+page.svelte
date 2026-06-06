@@ -3,6 +3,7 @@
     import MapView from '$lib/components/Map.svelte';
     import DialogPanel from '$lib/components/DialogPanel.svelte';
     import PhaseStepper from '$lib/components/PhaseStepper.svelte';
+    import UnitHistoryModal from '$lib/components/UnitHistoryModal.svelte';
     import { page } from '$app/state';
     import { goto } from '$app/navigation';
     import {
@@ -33,6 +34,8 @@
     let busy = $state(false);
     let error = $state('');
     let ws: WebSocket | null = null;
+    // Selected unit id for the history modal (null = closed).
+    let activeUnitId = $state<string | null>(null);
 
     // Typed event store fed by both initial hydration and live WS frames.
     let events = $state<FeedEvent[]>([]);
@@ -470,7 +473,7 @@
         {#if $layoutMode === 'dialog'}
             <aside class="left-column">
                 <section class="map-section" onclick={handleMapClick}>
-                    <div class="map-container"><MapView game={game} /></div>
+                    <div class="map-container"><MapView game={game} onunitclick={(id) => (activeUnitId = id)} /></div>
                     <div class="map-legend">
                         {#each POWERS as p}
                             {@const power = game.powers[p] || { centers: 0 }}
@@ -603,7 +606,7 @@
             </aside>
 
             <section class="map-section">
-                <div class="map-container"><MapView game={game} /></div>
+                <div class="map-container"><MapView game={game} onunitclick={(id) => (activeUnitId = id)} /></div>
                 <div class="map-legend">
                     {#each POWERS as p}
                         {@const power = game.powers[p] || { centers: 0 }}
@@ -641,6 +644,12 @@
             </div>
         {/if}
     </main>
+
+    <UnitHistoryModal
+        unitId={activeUnitId}
+        game={game}
+        onclose={() => (activeUnitId = null)}
+    />
 {/if}
 
 <style>
