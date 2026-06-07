@@ -418,7 +418,26 @@ button, input, select, textarea, .font-ui {
     height: calc(100vh - 64px);
     position: relative;
 }
-.app-layout.layout-map { grid-template-columns: 280px 1fr 420px; }
+
+/* Column widths live on CSS vars so the responsive overrides below + the
+   aspect-clamped height stay in sync. */
+.app-layout.layout-map {
+    --roster-w: 280px;
+    --feed-w: 420px;
+    --map-aspect: 1.35;            /* native width / height of the SVG */
+    grid-template-columns: var(--roster-w) 1fr var(--feed-w);
+    /* Pin the row height to whichever is smaller:
+       a) viewport minus header + page gutter, OR
+       b) map column width / aspect.
+       Wide viewports hit (b): the row shortens so the map fills its column
+       cleanly with no dead space above or below. Narrow viewports hit (a):
+       the map letterboxes inside the column instead of clipping. */
+    height: min(
+        calc(100vh - 64px),
+        calc((100vw - var(--roster-w) - var(--feed-w) - 4rem) / var(--map-aspect))
+    );
+    min-height: 540px;
+}
 .app-layout.layout-map .roster-panel { grid-column: 1; grid-row: 1; }
 .app-layout.layout-map .map-section  { grid-column: 2; grid-row: 1; }
 .app-layout.layout-map .feed-panel   { grid-column: 3; grid-row: 1; }
@@ -586,8 +605,10 @@ button, input, select, textarea, .font-ui {
     height: 100%;
 }
 #map-svg { width: 100%; height: 100%; max-height: 100%; object-fit: contain; display: block; }
-#map-svg path { stroke: var(--map-stroke); stroke-width: 0.6px; transition: fill 0.5s ease; }
-#map-svg path:hover { stroke: var(--color-fg); stroke-width: 1.2px; }
+/* Province borders. The :not(.transit-arrow) guard keeps the rule from
+   stomping on the much thicker transit arrows we draw on top of the map. */
+#map-svg path:not(.transit-arrow) { stroke: var(--map-stroke); stroke-width: 0.6px; transition: fill 0.5s ease; }
+#map-svg path:not(.transit-arrow):hover { stroke: var(--color-fg); stroke-width: 1.2px; }
 
 /* Safety net for stale-cached JS / missing sea aliases. */
 #map-svg #provinces > path#nat,
@@ -1600,8 +1621,10 @@ button, input, select, textarea, .font-ui {
 /* ---------------------------------------------------------------------
    Responsive
    --------------------------------------------------------------------- */
-@media (max-width: 1280px) { .app-layout.layout-map { grid-template-columns: 250px 1fr 380px; } }
-@media (max-width: 1100px) { .app-layout.layout-map { grid-template-columns: 220px 1fr 340px; } }
+/* Tighten the side columns on smaller windows. We override the CSS
+   vars so the aspect-clamped height formula recomputes correctly. */
+@media (max-width: 1280px) { .app-layout.layout-map { --roster-w: 250px; --feed-w: 380px; } }
+@media (max-width: 1100px) { .app-layout.layout-map { --roster-w: 220px; --feed-w: 340px; } }
 @media (max-width: 1000px) {
     .app-layout {
         grid-template-columns: 1fr;
