@@ -1,6 +1,6 @@
 <script lang="ts">
     import Header from '$lib/components/Header.svelte';
-    import { listGames, authResendVerification } from '$lib/api';
+    import { listGames, authResendVerification, ApiError } from '$lib/api';
     import type { GameSummary } from '$lib/types';
     import { user } from '$lib/stores/user';
     import { loginModalOpen, setupModalOpen, pushToast, aboutModalOpen } from '$lib/stores/ui';
@@ -12,17 +12,36 @@
     let error = $state('');
 
     async function refresh() {
+        // Listing is auth-only now — show an empty roster for logged-out
+        // visitors rather than firing a request we know will 401.
+        if (!$user) {
+            games = [];
+            loading = false;
+            return;
+        }
         try {
             const data = await listGames();
             games = (data.games || []).sort((a, b) => (b.updated_at || 0) - (a.updated_at || 0));
         } catch (e: any) {
-            error = e?.message || 'Failed to load games';
+            // 401/403 means a stale cookie or unverified email — treat as
+            // "no games to show" rather than a hard error banner.
+            if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+                games = [];
+            } else {
+                error = e?.message || 'Failed to load games';
+            }
         } finally {
             loading = false;
         }
     }
 
     onMount(refresh);
+    // Refetch when the user logs in/out — bootAuth() resolves after first
+    // mount so onMount alone misses the just-logged-in case.
+    $effect(() => {
+        void $user;
+        refresh();
+    });
 
     function newGame() {
         if (!$user) {
