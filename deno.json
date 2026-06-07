@@ -4,6 +4,6 @@
     "dev":     "deno run -A --node-modules-dir=auto npm:vite dev --port 8420",
     "build":   "deno run -A --node-modules-dir=auto npm:vite build",
     "preview": "deno run -A --node-modules-dir=auto npm:vite preview --port 8420",
-    "check":   "deno run -A --node-modules-dir=auto npm:svelte-kit sync && deno run -A --node-modules-dir=auto npm:svelte-check --tsconfig ./tsconfig.json"
+    "check":   "deno run -A --node-modules-dir=auto npm:@sveltejs/kit sync && deno run -A --node-modules-dir=auto npm:svelte-check --tsconfig ./tsconfig.json"
   }
 }
