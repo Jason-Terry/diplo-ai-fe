@@ -225,7 +225,7 @@ function attachProvinceTooltips(svg: SVGSVGElement) {
 /** Reapply theme + state to an already-loaded map. Called on every state update. */
 export function applyState(svg: SVGSVGElement, state: GameState) {
     setupLayers(svg);
-    svg.querySelectorAll('.unit-marker, .transit-arrow').forEach((el) => el.remove());
+    svg.querySelectorAll('.unit-marker, .transit-arrow, .bounce-icon').forEach((el) => el.remove());
 
     const parchment = isParchment();
     const seaFill = cssVar('--map-sea-fill') || '#1a2940';
@@ -266,6 +266,10 @@ export function applyState(svg: SVGSVGElement, state: GameState) {
     // under the destination unit (reads as "arrived here" rather than
     // "going somewhere from here").
     drawTransits(svg, state);
+    // Bounce icons sit at the contested destination province. They render
+    // under the units that ARE there (the holder, plus any retreating
+    // pieces) so unit pips read first, then the conflict context.
+    drawBounces(svg, state);
     drawUnits(svg, state.units || [], false);
     drawUnits(svg, (state.dislodged || []) as Unit[], true);
 }
@@ -529,4 +533,103 @@ function drawUnits(svg: SVGSVGElement, units: Unit[], dislodged: boolean) {
         group.appendChild(text);
         svg.appendChild(group);
     });
+}
+
+// ─── Bounce icons ────────────────────────────────────────────────────────────
+//
+// When two or more units try to move into the same province and lose by
+// strength, the engine flags each failed move with the "bounce" tag in
+// state.last_results (keyed by `<TYPE> <SRC>`). We paint a small crossed-
+// swords X at the contested destination so spectators can see WHERE the
+// conflict happened, not just that it did.
+//
+// We trust state.last_phase_orders to tell us each attempted destination —
+// last_results only gives us the bounced unit's source.
+
+interface BounceCluster {
+    /** Destination province code (uppercased). */
+    dst: string;
+    /** How many units tried (and failed) to seize this province. Used as a
+     *  hint for the icon size — a 3-way pile-up reads more dramatic than
+     *  a 2-way standoff. */
+    contestants: number;
+}
+
+/** Parse an order string like "A PAR - BUR" or "F NTH - NWG" into its
+ *  (unit-type, source, destination) parts. Returns null for non-move
+ *  orders (Hold, Support, Convoy). */
+function parseMoveOrder(order: string): { unitKey: string; src: string; dst: string } | null {
+    // Move orders use ` - ` (or sometimes `-`) between the source unit and
+    // the destination province. Anything else (H, S, C) we ignore here.
+    const m = order.match(/^([AF])\s+([A-Z]{3}(?:\/[A-Z]{2})?)\s*-\s*([A-Z]{3}(?:\/[A-Z]{2})?)\s*$/);
+    if (!m) return null;
+    const [, type, src, dst] = m;
+    // last_results keys strip the coast suffix off the source — match that.
+    const srcBase = src.split('/')[0];
+    return {
+        unitKey: `${type} ${srcBase}`,
+        src: srcBase,
+        dst: dst.split('/')[0]
+    };
+}
+
+function collectBounces(state: GameState): BounceCluster[] {
+    const last = (state.last_results || {}) as Record<string, string[]>;
+    const orders = (state.last_phase_orders || {}) as Record<string, string[]>;
+    if (!Object.keys(last).length || !Object.keys(orders).length) return [];
+
+    const byDst = new Map<string, number>();
+    for (const power in orders) {
+        for (const order of orders[power] || []) {
+            const parsed = parseMoveOrder(order);
+            if (!parsed) continue;
+            const tags = last[parsed.unitKey];
+            if (!Array.isArray(tags) || !tags.includes('bounce')) continue;
+            byDst.set(parsed.dst, (byDst.get(parsed.dst) || 0) + 1);
+        }
+    }
+    return Array.from(byDst, ([dst, contestants]) => ({ dst, contestants }));
+}
+
+function drawBounces(svg: SVGSVGElement, state: GameState): void {
+    const clusters = collectBounces(state);
+    if (!clusters.length) return;
+
+    for (const { dst, contestants } of clusters) {
+        const c = provinceCenter(svg, dst);
+        if (!c) continue;
+
+        // A crossed X feels more "battle" than a single dot. Scale with
+        // the contestant count so a 2-way standoff (the typical case)
+        // reads quieter than a 4-way pile-up.
+        const arm = 14 + Math.min(contestants - 2, 3) * 2;
+        const d = `M ${c.x - arm} ${c.y - arm} L ${c.x + arm} ${c.y + arm} ` +
+                  `M ${c.x - arm} ${c.y + arm} L ${c.x + arm} ${c.y - arm}`;
+
+        const outline = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        outline.setAttribute('class', 'bounce-icon bounce-icon-outline');
+        outline.setAttribute('d', d);
+        outline.setAttribute('fill', 'none');
+        outline.setAttribute('stroke', 'rgba(0,0,0,0.65)');
+        outline.setAttribute('stroke-width', '12');
+        outline.setAttribute('stroke-linecap', 'round');
+        outline.style.pointerEvents = 'none';
+        svg.appendChild(outline);
+
+        const x = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        x.setAttribute('class', 'bounce-icon');
+        x.setAttribute('d', d);
+        x.setAttribute('fill', 'none');
+        // Warn color from the theme tokens so a bounce reads as "trouble".
+        x.setAttribute('stroke', cssVar('--color-warn') || '#b58900');
+        x.setAttribute('stroke-width', '7');
+        x.setAttribute('stroke-linecap', 'round');
+        x.style.pointerEvents = 'none';
+
+        // Tooltip so hover names the bounce explicitly.
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = `Bounce at ${PROVINCE_NAMES[dst] || dst} — ${contestants} contestants`;
+        x.appendChild(title);
+        svg.appendChild(x);
+    }
 }

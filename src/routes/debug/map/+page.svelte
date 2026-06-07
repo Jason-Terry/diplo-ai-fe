@@ -45,6 +45,26 @@
     // Movement-phase moves only (retreats also emit `moved` events).
     const SYNTH_LAST_PHASE = 'SPRING 1901 MOVEMENT';
 
+    // Synthetic bounces: each entry models a province where two units tried
+    // and failed to move. Used to exercise the bounce-icon renderer.
+    // last_results is keyed by "<TYPE> <SRC>"; last_phase_orders carries
+    // the order strings the engine would have emitted.
+    const SYNTH_BOUNCES: Array<{ dst: string; attackers: Array<{ unit: string; src: string; power: string }> }> = [
+        { dst: 'BUR', attackers: [
+            { unit: 'A', src: 'MAR', power: 'FRANCE' },
+            { unit: 'A', src: 'RUH', power: 'GERMANY' }
+        ] },
+        { dst: 'GAL', attackers: [
+            { unit: 'A', src: 'VIE', power: 'AUSTRIA' },
+            { unit: 'A', src: 'UKR', power: 'RUSSIA' },
+            { unit: 'A', src: 'BUD', power: 'AUSTRIA' }
+        ] },
+        { dst: 'BLA', attackers: [
+            { unit: 'F', src: 'ANK', power: 'TURKEY' },
+            { unit: 'F', src: 'SEV', power: 'RUSSIA' }
+        ] }
+    ];
+
     // Build the synthetic game state once. ONE unit per province (all 75),
     // power cycles so adjacent units don't blend into a single color.
     // Transits are layered on top by attaching a `moved` history entry to
@@ -109,12 +129,26 @@
             orderable: {} as any,
             adjustments: {} as any,
             messages: [],
-            last_results: {},
+            last_results: (() => {
+                const out: Record<string, string[]> = {};
+                for (const b of SYNTH_BOUNCES) {
+                    for (const a of b.attackers) out[`${a.unit} ${a.src}`] = ['bounce'];
+                }
+                return out;
+            })(),
             notes: {} as any,
             commitments: [],
             commitments_history: [],
             last_phase: SYNTH_LAST_PHASE,
-            last_phase_orders: {} as any,
+            last_phase_orders: (() => {
+                const out: Record<string, string[]> = {};
+                for (const b of SYNTH_BOUNCES) {
+                    for (const a of b.attackers) {
+                        (out[a.power] ||= []).push(`${a.unit} ${a.src} - ${b.dst}`);
+                    }
+                }
+                return out;
+            })(),
             calls: [],
             calls_history: [],
             units_registry: units_registry as any,
