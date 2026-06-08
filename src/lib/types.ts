@@ -47,19 +47,27 @@ export interface GameState {
     units_registry: Record<string, unknown>;
     winner: string | null;
     is_complete: boolean;
+    /** Lifecycle label. Anything non-active freezes the game. */
+    terminal_status: GameTerminalStatus;
+    /** True iff the game was created via the __free_trial__ preset.
+     *  Gates the refund button. */
+    free_trial: boolean;
     agents_config: Record<string, { provider: string; policy: string }>;
     initialized: boolean;
     negotiation_rounds: number;
 }
 
 /** Lifecycle label written by the BE. Anything other than "active" means
- *  the game can't advance further — no phase calls accepted. */
+ *  the game can't advance further — no phase calls accepted. "refunded" is
+ *  a terminal state set by the refund-and-retry flow; those games are
+ *  hidden from the FE list. */
 export type GameTerminalStatus =
     | 'active'
     | 'complete'
     | 'errored'
     | 'abandoned'
-    | 'stalled';
+    | 'stalled'
+    | 'refunded';
 
 export interface GameSummary {
     game_id: string;
@@ -82,6 +90,12 @@ export interface User {
     github_login?: string | null;
     /** True iff the user has a local password (i.e. can use Change password). */
     has_password?: boolean;
+    /** Platform admin (project owner). Bypasses BYOK + refund-limit gates. */
+    is_admin?: boolean;
+    /** How many broken-game refunds the user has used. Drives the modal copy. */
+    refunds_used?: number;
+    /** Hard cap on refunds. Past this, the modal shows the GitHub link only. */
+    refunds_limit?: number;
 }
 
 export interface Policy {

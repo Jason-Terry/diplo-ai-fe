@@ -4,6 +4,7 @@
     import DialogPanel from '$lib/components/DialogPanel.svelte';
     import PhaseStepper from '$lib/components/PhaseStepper.svelte';
     import UnitHistoryModal from '$lib/components/UnitHistoryModal.svelte';
+    import RefundModal from '$lib/components/RefundModal.svelte';
     import { page } from '$app/state';
     import { goto } from '$app/navigation';
     import {
@@ -17,7 +18,7 @@
     import type { GameState } from '$lib/types';
     import { layoutMode, pushToast } from '$lib/stores/ui';
     import { onMount, onDestroy } from 'svelte';
-    import { ArrowLeft, ArrowRight } from 'lucide-svelte';
+    import { ArrowLeft, ArrowRight, AlertTriangle } from 'lucide-svelte';
     import {
         type FeedEvent,
         type Power,
@@ -36,6 +37,17 @@
     let ws: WebSocket | null = null;
     // Selected unit id for the history modal (null = closed).
     let activeUnitId = $state<string | null>(null);
+
+    // Refund modal state. `reason` controls the copy tone:
+    //   manual → user clicked the button, show the "are you sure, this
+    //            INVALIDATES the game" warning.
+    //   auto   → system flagged the game broken (terminal_status === 'errored'),
+    //            skip the confirmation tone.
+    let refundOpen = $state(false);
+    let refundReason = $state<'manual' | 'auto'>('manual');
+    // Remember which game-id we've already auto-opened on, so flipping back
+    // and forth between games doesn't suppress the modal.
+    let autoShownFor: string | null = null;
 
     // Typed event store fed by both initial hydration and live WS frames.
     let events = $state<FeedEvent[]>([]);
@@ -417,6 +429,37 @@
     function handleMapClick() {
         if ($layoutMode === 'dialog') layoutMode.set('map');
     }
+
+    // Auto-open the refund modal when the BE has marked this game broken.
+    // Will start firing for real once the auto-error-detection slice lands;
+    // wiring it now means we don't have to touch this file again then.
+    $effect(() => {
+        if (
+            game &&
+            game.free_trial &&
+            game.terminal_status === 'errored' &&
+            autoShownFor !== game.game_id
+        ) {
+            refundReason = 'auto';
+            refundOpen = true;
+            autoShownFor = game.game_id;
+        }
+    });
+
+    function openRefundManual() {
+        refundReason = 'manual';
+        refundOpen = true;
+    }
+
+    // Show the manual button only for free-trial games that are still in
+    // states where a refund makes sense. Completed and already-refunded
+    // games shouldn't offer it.
+    let canRefund = $derived(
+        !!game &&
+            game.free_trial &&
+            game.terminal_status !== 'complete' &&
+            game.terminal_status !== 'refunded'
+    );
 </script>
 
 <Header gameId={gameId} showLayoutToggle={!!game}>
@@ -446,11 +489,20 @@
                 {#if !busy}<ArrowRight size={14} />{/if}
             </button>
         {/if}
+        {#if canRefund}
+            <button class="btn-ghost small" onclick={openRefundManual} title="Game stuck or broken?">
+                <AlertTriangle size={12} /> Issue?
+            </button>
+        {/if}
         <button class="btn-ghost small" onclick={() => goto('/')}>
             <ArrowLeft size={12} /> Games
         </button>
     {/snippet}
 </Header>
+
+{#if game}
+    <RefundModal bind:open={refundOpen} gameId={gameId} reason={refundReason} />
+{/if}
 
 {#if loading}
     <main class="centered-state"><div class="empty-state">Loading game…</div></main>

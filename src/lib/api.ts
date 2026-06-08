@@ -62,6 +62,18 @@ export function runAdjudicate(gameId: string): Promise<unknown> {
     return api(`/api/games/${gameId}/phase/adjudicate`, { method: 'POST' });
 }
 
+/** Invalidate a broken free-trial game and spin up a fresh one with the
+ *  same config. Counts against the user's refunds_used quota. The BE
+ *  returns 429 once the quota is exhausted — surface that as the
+ *  contact-us state in the modal. */
+export function refundGame(gameId: string): Promise<{
+    new_game_id: string;
+    refunds_used: number;
+    refunds_limit: number;
+}> {
+    return api(`/api/games/${gameId}/refund`, { method: 'POST' });
+}
+
 // ---------- Policies ----------
 
 export function listPolicies(): Promise<{

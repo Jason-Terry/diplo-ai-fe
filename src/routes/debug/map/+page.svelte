@@ -154,6 +154,8 @@
             units_registry: units_registry as any,
             winner: null,
             is_complete: false,
+            terminal_status: 'active',
+            free_trial: false,
             agents_config: {} as any,
             initialized: true,
             negotiation_rounds: 0
