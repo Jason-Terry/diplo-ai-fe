@@ -64,6 +64,14 @@
         }
     }
 
+    // Map BE lifecycle state to a UI label. Falls back to is_complete for
+    // pre-migration rows that haven't been re-persisted yet.
+    function statusLabel(g: GameSummary): string {
+        const s = g.terminal_status ?? (g.is_complete ? 'complete' : 'active');
+        if (s === 'active') return 'in progress';
+        return s;
+    }
+
     function relativeTime(unix: number): string {
         if (!unix) return '';
         const diff = Date.now() / 1000 - unix;
@@ -130,8 +138,8 @@
                                 {#if g.updated_at}· {relativeTime(g.updated_at)}{/if}
                             </div>
                         </div>
-                        <div class="game-status" class:complete={g.is_complete}>
-                            {g.is_complete ? 'complete' : 'in progress'}
+                        <div class="game-status" data-status={g.terminal_status ?? (g.is_complete ? 'complete' : 'active')}>
+                            {statusLabel(g)}
                         </div>
                     </a>
                 {/each}
@@ -240,8 +248,14 @@
         background: var(--color-surface-soft);
         flex-shrink: 0;
     }
-    .game-status.complete {
+    .game-status[data-status='complete'] {
         color: var(--color-warn);
         border-color: var(--color-warn);
+    }
+    .game-status[data-status='errored'],
+    .game-status[data-status='abandoned'],
+    .game-status[data-status='stalled'] {
+        color: var(--color-danger);
+        border-color: var(--color-danger);
     }
 </style>

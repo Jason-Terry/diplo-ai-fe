@@ -52,8 +52,18 @@ export interface GameState {
     negotiation_rounds: number;
 }
 
+/** Lifecycle label written by the BE. Anything other than "active" means
+ *  the game can't advance further — no phase calls accepted. */
+export type GameTerminalStatus =
+    | 'active'
+    | 'complete'
+    | 'errored'
+    | 'abandoned'
+    | 'stalled';
+
 export interface GameSummary {
     game_id: string;
+    terminal_status: GameTerminalStatus;
     winner: string | null;
     is_complete: boolean;
     turns: number;
