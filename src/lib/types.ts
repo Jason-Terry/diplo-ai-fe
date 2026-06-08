@@ -25,6 +25,15 @@ export interface Unit {
     id: string;
 }
 
+export interface PowerUsage {
+    input_tokens: number;
+    output_tokens: number;
+    total_tokens: number;
+    /** Estimated provider cost in USD. Zero for models the catalog has no
+     *  pricing entry for (avoids hard-failing on stale catalog data). */
+    cost_usd: number;
+}
+
 export interface GameState {
     game_id: string;
     turn: Turn;
@@ -52,6 +61,9 @@ export interface GameState {
     /** True iff the game was created via the __free_trial__ preset.
      *  Gates the refund button. */
     free_trial: boolean;
+    /** Per-power running totals of LLM token + cost spend. Keyed by power
+     *  name (ENGLAND, FRANCE, ...). Missing power = no calls yet. */
+    usage_by_power: Record<string, PowerUsage>;
     agents_config: Record<string, { provider: string; policy: string }>;
     initialized: boolean;
     negotiation_rounds: number;

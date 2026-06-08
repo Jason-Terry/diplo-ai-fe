@@ -156,6 +156,7 @@
             is_complete: false,
             terminal_status: 'active',
             free_trial: false,
+            usage_by_power: {},
             agents_config: {} as any,
             initialized: true,
             negotiation_rounds: 0

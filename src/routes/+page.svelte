@@ -100,6 +100,10 @@
             <button class="btn-ghost hero-secondary" onclick={() => aboutModalOpen.set(true)}>
                 Learn the rules first
             </button>
+            <p class="hero-tagline">
+                First game's on us. After that, bring your own LLM key —
+                Anthropic, OpenAI, or Google.
+            </p>
         </div>
     </section>
 
@@ -160,6 +164,13 @@
         display: flex;
         justify-content: center;
         padding: 2rem 0 2.5rem;
+    }
+    .hero-tagline {
+        margin: 1rem 0 0;
+        font-size: 0.8rem;
+        color: var(--color-fg-muted);
+        max-width: 32rem;
+        line-height: 1.5;
     }
     .verify-banner {
         display: flex;

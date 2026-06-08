@@ -145,9 +145,18 @@
                 <Key size={16} /><h2>Models</h2>
             </header>
             <p class="acc-card-sub">
-                Paste a provider key once. Every model that key unlocks shows up
-                in the dropdown when you start a game. We store the encrypted key and
-                show you the last 4 characters, never the whole thing.
+                Diplo&nbsp;AI is bring-your-own-key — you pay your provider directly,
+                we don't take a cut. Paste a key once and every model it unlocks shows
+                up in the dropdown when you start a game. Keys are stored encrypted;
+                we only display the last four characters.
+            </p>
+            <p class="acc-card-sub byok-links">
+                Get a key:
+                <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">Anthropic Console</a>
+                ·
+                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">OpenAI Platform</a>
+                ·
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
             </p>
         </section>
 

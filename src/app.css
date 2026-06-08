@@ -789,6 +789,16 @@ button, input, select, textarea, .font-ui {
     white-space: nowrap;
     letter-spacing: 0.02em;
 }
+.roster-cost {
+    font-size: 0.62rem;
+    color: var(--color-fg-muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+}
+.roster-cost .cost-tag {
+    color: var(--color-fg-dim);
+    font-style: italic;
+}
 .roster-sc-block {
     display: flex;
     flex-direction: column;

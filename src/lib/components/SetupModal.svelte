@@ -120,6 +120,12 @@
     let freeTrialUsed = $derived(
         !!presets.find((p) => p.id === FREE_TRIAL_PRESET_ID && p.free_trial_used)
     );
+    // The BE attaches a hand-written one-liner to the free-trial preset
+    // ("On us, once per account...") — surface it in the modal subtitle
+    // so first-time players know what they're agreeing to.
+    let freeTrialSummary = $derived(
+        presets.find((p) => p.id === FREE_TRIAL_PRESET_ID)?.summary || ''
+    );
 
     let canStart = $derived.by(() => {
         if (isFreeTrial) return !freeTrialUsed;
@@ -187,9 +193,16 @@
                 <X size={20} />
             </button>
             <h2>Set the stage</h2>
-            <p class="modal-sub">
-                Pick a preset to fill every slot, or set them yourself.
-            </p>
+            {#if !freeTrialUsed && freeTrialSummary}
+                <p class="modal-sub">
+                    <strong>Your first game's on us.</strong> {freeTrialSummary}
+                </p>
+            {:else}
+                <p class="modal-sub">
+                    Pick a preset to fill every slot, or set them yourself.
+                    Diplo&nbsp;AI is bring-your-own-key — your tokens, your provider.
+                </p>
+            {/if}
 
             {#if loading}
                 <div class="empty-state">Loading…</div>

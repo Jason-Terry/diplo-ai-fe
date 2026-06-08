@@ -414,6 +414,41 @@
         rosterRows[0] && rosterRows[0].status !== 'eliminated' ? rosterRows[0].centers : 0
     );
 
+    // ─── Cost telemetry helpers ────────────────────────────────────────────
+    // Tokens "12.3k", "1.2M", "456" — compact for the cramped roster card.
+    function fmtTokens(n: number): string {
+        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+        if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+        return String(n);
+    }
+    // Cost "$1.23" above a dollar, "$0.045" below. Sub-cent reads as "<$0.01".
+    function fmtCost(c: number): string {
+        if (c <= 0) return '$0.00';
+        if (c < 0.01) return '<$0.01';
+        if (c < 1) return `$${c.toFixed(3)}`;
+        return `$${c.toFixed(2)}`;
+    }
+    function powerUsage(power: string) {
+        return (
+            game?.usage_by_power?.[power] || {
+                input_tokens: 0,
+                output_tokens: 0,
+                total_tokens: 0,
+                cost_usd: 0
+            }
+        );
+    }
+    let gameTotals = $derived.by(() => {
+        const u = game?.usage_by_power || {};
+        let tokens = 0;
+        let cost = 0;
+        for (const power of Object.keys(u)) {
+            tokens += u[power].total_tokens || 0;
+            cost += u[power].cost_usd || 0;
+        }
+        return { tokens, cost };
+    });
+
     let scSegments = $derived.by(() => {
         if (!game) return { owned: [] as Array<{ power: string; centers: number }>, neutral: 0 };
         const owned = rosterRows
@@ -563,6 +598,16 @@
                                         <span class="roster-name">{r.power}</span>
                                     </div>
                                     <div class="roster-traits">{traits || '—'}</div>
+                                    {#if powerUsage(r.power).total_tokens > 0}
+                                        <div class="roster-cost">
+                                            {fmtTokens(powerUsage(r.power).total_tokens)} tok
+                                            {#if game.free_trial}
+                                                <span class="cost-tag">· on us</span>
+                                            {:else}
+                                                · {fmtCost(powerUsage(r.power).cost_usd)}
+                                            {/if}
+                                        </div>
+                                    {/if}
                                 </div>
                                 <div class="roster-sc-block">
                                     <div class="roster-sc-count">
@@ -600,7 +645,14 @@
             <aside class="roster-panel panel-card">
                 <h2 class="panel-title">
                     Powers
-                    <span class="panel-hint">{topCenters ? `${topCenters} / 18 to win` : ''}</span>
+                    <span class="panel-hint">
+                        {#if topCenters}{topCenters} / 18 to win{/if}
+                        {#if gameTotals.tokens > 0}
+                            {#if topCenters} · {/if}
+                            {fmtTokens(gameTotals.tokens)} tok ·
+                            {#if game.free_trial}on us{:else}{fmtCost(gameTotals.cost)}{/if}
+                        {/if}
+                    </span>
                 </h2>
                 <ul class="roster-list">
                     {#each rosterRows as r}
@@ -624,6 +676,16 @@
                                     <span class="roster-name">{r.power}</span>
                                 </div>
                                 <div class="roster-traits">{traits || '—'}</div>
+                                {#if powerUsage(r.power).total_tokens > 0}
+                                    <div class="roster-cost">
+                                        {fmtTokens(powerUsage(r.power).total_tokens)} tok
+                                        {#if game.free_trial}
+                                            <span class="cost-tag">· on us</span>
+                                        {:else}
+                                            · {fmtCost(powerUsage(r.power).cost_usd)}
+                                        {/if}
+                                    </div>
+                                {/if}
                             </div>
                             <div class="roster-sc-block">
                                 <div class="roster-sc-count">
