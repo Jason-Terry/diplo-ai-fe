@@ -578,7 +578,9 @@
                 <aside class="roster-panel panel-card">
                     <h2 class="panel-title">
                         Powers
-                        <span class="panel-hint">{topCenters ? `${topCenters} / 18 to win` : ''}</span>
+                        <span class="panel-hint">
+                        {#if gameTotals.tokens > 0}{fmtTokens(gameTotals.tokens)} tok{/if}
+                    </span>
                     </h2>
                     <ul class="roster-list">
                         {#each rosterRows as r}
@@ -650,12 +652,7 @@
                 <h2 class="panel-title">
                     Powers
                     <span class="panel-hint">
-                        {#if topCenters}{topCenters} / 18 to win{/if}
-                        {#if gameTotals.tokens > 0}
-                            {#if topCenters} · {/if}
-                            {fmtTokens(gameTotals.tokens)} tok ·
-                            {#if game.free_trial}on us{:else}{fmtCost(gameTotals.cost)}{/if}
-                        {/if}
+                        {#if gameTotals.tokens > 0}{fmtTokens(gameTotals.tokens)} tok{/if}
                     </span>
                 </h2>
                 <ul class="roster-list">
