@@ -133,7 +133,7 @@
         {:else}
             <div class="games-list">
                 {#each games as g}
-                    <a class="game-row" href="/games/{g.game_id}">
+                    <a class="game-row" href={g.is_complete || g.terminal_status === 'complete' ? `/games/${g.game_id}/results` : `/games/${g.game_id}`}>
                         <div class="game-row-meta">
                             <div class="game-id">{g.game_id}</div>
                             <div class="game-sub">

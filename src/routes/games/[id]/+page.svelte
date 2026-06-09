@@ -514,7 +514,11 @@
     {/snippet}
 
     {#snippet actions()}
-        {#if game && !game.is_complete}
+        {#if game && game.is_complete}
+            <button class="btn-primary small" onclick={() => goto(`/games/${gameId}/results`)}>
+                View Results <ArrowRight size={14} />
+            </button>
+        {:else if game && !game.is_complete}
             <button
                 class="btn-primary small"
                 onclick={nextAction}

@@ -25,6 +25,21 @@ export interface Unit {
     id: string;
 }
 
+/** One declared promise. The BE engine sets `kept` to a boolean once the
+ *  orders that resolve it are submitted; null/undefined means it couldn't
+ *  be auto-resolved (unknown commitment type). */
+export interface Commitment {
+    power: string;
+    text: string;
+    kept?: boolean | null;
+    type?: string;
+    target?: string;
+    /** Phase string the commitment was resolved in, e.g. "F1901M". */
+    resolved_at?: string;
+    /** Phase string the commitment was declared in. */
+    phase?: string;
+}
+
 export interface PowerUsage {
     input_tokens: number;
     output_tokens: number;
