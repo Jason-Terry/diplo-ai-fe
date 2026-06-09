@@ -157,6 +157,8 @@
             terminal_status: 'active',
             free_trial: false,
             usage_by_power: {},
+            visibility: 'private',
+            is_owner: true,
             agents_config: {} as any,
             initialized: true,
             negotiation_rounds: 0

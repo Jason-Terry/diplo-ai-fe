@@ -5,6 +5,7 @@
     import PhaseStepper from '$lib/components/PhaseStepper.svelte';
     import UnitHistoryModal from '$lib/components/UnitHistoryModal.svelte';
     import RefundModal from '$lib/components/RefundModal.svelte';
+    import ShareModal from '$lib/components/ShareModal.svelte';
     import { page } from '$app/state';
     import { goto } from '$app/navigation';
     import {
@@ -15,10 +16,10 @@
         gameSocket,
         ApiError
     } from '$lib/api';
-    import type { GameState } from '$lib/types';
+    import type { GameState, GameVisibility } from '$lib/types';
     import { layoutMode, pushToast } from '$lib/stores/ui';
     import { onMount, onDestroy } from 'svelte';
-    import { ArrowLeft, ArrowRight, AlertTriangle } from 'lucide-svelte';
+    import { ArrowLeft, ArrowRight, AlertTriangle, Share2, Eye } from 'lucide-svelte';
     import {
         type FeedEvent,
         type Power,
@@ -48,6 +49,12 @@
     // Remember which game-id we've already auto-opened on, so flipping back
     // and forth between games doesn't suppress the modal.
     let autoShownFor: string | null = null;
+    // Share modal state — owner-only.
+    let shareOpen = $state(false);
+    let visibilityState = $state<GameVisibility>('private');
+    $effect(() => {
+        if (game?.visibility) visibilityState = game.visibility;
+    });
 
     // Typed event store fed by both initial hydration and live WS frames.
     let events = $state<FeedEvent[]>([]);
@@ -466,11 +473,11 @@
     }
 
     // Auto-open the refund modal when the BE has marked this game broken.
-    // Will start firing for real once the auto-error-detection slice lands;
-    // wiring it now means we don't have to touch this file again then.
+    // Spectators are excluded — only the owner can refund.
     $effect(() => {
         if (
             game &&
+            game.is_owner &&
             game.free_trial &&
             game.terminal_status === 'errored' &&
             autoShownFor !== game.game_id
@@ -486,15 +493,16 @@
         refundOpen = true;
     }
 
-    // Show the manual button only for free-trial games that are still in
-    // states where a refund makes sense. Completed and already-refunded
-    // games shouldn't offer it.
+    // Manual refund button only when the viewer owns a free-trial game in
+    // a state where retry still makes sense.
     let canRefund = $derived(
         !!game &&
+            game.is_owner &&
             game.free_trial &&
             game.terminal_status !== 'complete' &&
             game.terminal_status !== 'refunded'
     );
+    let isOwner = $derived(!!game && game.is_owner);
 </script>
 
 <Header gameId={gameId} showLayoutToggle={!!game}>
@@ -514,11 +522,16 @@
     {/snippet}
 
     {#snippet actions()}
+        {#if !isOwner && game}
+            <span class="spectator-pill" title="You're spectating — only the owner can advance phases">
+                <Eye size={12} /> Spectator
+            </span>
+        {/if}
         {#if game && game.is_complete}
             <button class="btn-primary small" onclick={() => goto(`/games/${gameId}/results`)}>
                 View Results <ArrowRight size={14} />
             </button>
-        {:else if game && !game.is_complete}
+        {:else if game && !game.is_complete && isOwner}
             <button
                 class="btn-primary small"
                 onclick={nextAction}
@@ -526,6 +539,11 @@
             >
                 {busy ? nextActionBusyLabel() : nextActionLabel()}
                 {#if !busy}<ArrowRight size={14} />{/if}
+            </button>
+        {/if}
+        {#if isOwner}
+            <button class="btn-ghost small" onclick={() => (shareOpen = true)} title="Share this game">
+                <Share2 size={12} /> Share
             </button>
         {/if}
         {#if canRefund}
@@ -541,6 +559,9 @@
 
 {#if game}
     <RefundModal bind:open={refundOpen} gameId={gameId} reason={refundReason} />
+    {#if isOwner}
+        <ShareModal bind:open={shareOpen} gameId={gameId} bind:visibility={visibilityState} />
+    {/if}
 {/if}
 
 {#if loading}
@@ -774,5 +795,19 @@
         justify-content: center;
         height: calc(100vh - 64px);
         padding: 2rem;
+    }
+    .spectator-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid var(--color-border);
+        color: var(--color-fg-muted);
+        background: var(--color-surface-soft);
     }
 </style>

@@ -119,8 +119,8 @@
 
     <section class="games-section">
         <header class="games-header">
-            <h3>Recent games</h3>
-            <span class="games-hint">Click a row to spectate</span>
+            <h3>Your games</h3>
+            <a class="games-hint games-hint-link" href="/browse">Browse public games →</a>
         </header>
         {#if loading}
             <div class="empty-state">Loading games…</div>
@@ -209,6 +209,13 @@
     .games-hint {
         font-size: 0.78rem;
         color: var(--color-fg-muted);
+    }
+    .games-hint-link {
+        color: var(--color-accent);
+        text-decoration: none;
+    }
+    .games-hint-link:hover {
+        text-decoration: underline;
     }
     .games-list {
         display: flex;

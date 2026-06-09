@@ -74,6 +74,22 @@ export function refundGame(gameId: string): Promise<{
     return api(`/api/games/${gameId}/refund`, { method: 'POST' });
 }
 
+/** Owner-only: update visibility (private / shared / public). */
+export function setGameVisibility(
+    gameId: string,
+    visibility: 'private' | 'shared' | 'public'
+): Promise<{ game_id: string; visibility: string }> {
+    return api(`/api/games/${gameId}/visibility`, {
+        method: 'POST',
+        body: JSON.stringify({ visibility })
+    });
+}
+
+/** Logged-in users only: list of all public games. */
+export function listPublicGames(): Promise<{ games: GameSummary[] }> {
+    return api('/api/games/public');
+}
+
 // ---------- Policies ----------
 
 export function listPolicies(): Promise<{

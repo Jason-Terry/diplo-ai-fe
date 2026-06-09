@@ -79,6 +79,11 @@ export interface GameState {
     /** Per-power running totals of LLM token + cost spend. Keyed by power
      *  name (ENGLAND, FRANCE, ...). Missing power = no calls yet. */
     usage_by_power: Record<string, PowerUsage>;
+    /** Share visibility (owner can change via ShareModal). */
+    visibility: GameVisibility;
+    /** True iff the logged-in viewer is the owner. Drives the FE's
+     *  spectator mode — non-owners see read-only UI. */
+    is_owner: boolean;
     agents_config: Record<string, { provider: string; policy: string }>;
     initialized: boolean;
     negotiation_rounds: number;
@@ -86,8 +91,8 @@ export interface GameState {
 
 /** Lifecycle label written by the BE. Anything other than "active" means
  *  the game can't advance further — no phase calls accepted. "refunded" is
- *  a terminal state set by the refund-and-retry flow; those games are
- *  hidden from the FE list. */
+ *  retained for legacy records; new refunds set the `invalidated` field
+ *  instead. */
 export type GameTerminalStatus =
     | 'active'
     | 'complete'
@@ -96,9 +101,21 @@ export type GameTerminalStatus =
     | 'stalled'
     | 'refunded';
 
+/** Who can see this game.
+ *  - private: owner only
+ *  - shared:  any logged-in user with the URL
+ *  - public:  any logged-in user; also listed on /browse */
+export type GameVisibility = 'private' | 'shared' | 'public';
+
 export interface GameSummary {
     game_id: string;
     terminal_status: GameTerminalStatus;
+    visibility?: GameVisibility;
+    /** True if BE has marked it killed (refund / admin / etc.). The list
+     *  endpoints already filter these out; this field is here for
+     *  defensive client-side checks. */
+    invalidated?: boolean;
+    invalidation_reason?: string | null;
     winner: string | null;
     is_complete: boolean;
     turns: number;

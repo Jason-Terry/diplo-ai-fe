@@ -34,7 +34,7 @@
         </a>
         <button class="about-link" onclick={() => aboutModalOpen.set(true)}>What is this?</button>
         {#if gameId}
-            <span class="ml-2 text-xs text-fg-muted font-mono">/{gameId.slice(0, 12)}</span>
+            <span class="ml-2 text-xs text-fg-muted font-mono">#{gameId}</span>
         {/if}
     </div>
 
