@@ -1,6 +1,6 @@
 <script lang="ts">
     import Header from '$lib/components/Header.svelte';
-    import { listGames, authResendVerification, ApiError } from '$lib/api';
+    import { listGames, listPublicGames, authResendVerification, ApiError } from '$lib/api';
     import type { GameSummary } from '$lib/types';
     import { user } from '$lib/stores/user';
     import { loginModalOpen, setupModalOpen, pushToast, aboutModalOpen } from '$lib/stores/ui';
@@ -12,16 +12,12 @@
     let error = $state('');
 
     async function refresh() {
-        // Listing is auth-only now — show an empty roster for logged-out
-        // visitors rather than firing a request we know will 401.
-        if (!$user) {
-            games = [];
-            loading = false;
-            return;
-        }
+        // Logged in: your roster. Logged out: a recent-public-games teaser —
+        // the browse endpoint is open to anonymous visitors.
         try {
-            const data = await listGames();
-            games = (data.games || []).sort((a, b) => (b.updated_at || 0) - (a.updated_at || 0));
+            const data = $user ? await listGames() : await listPublicGames();
+            const rows = (data.games || []).sort((a, b) => (b.updated_at || 0) - (a.updated_at || 0));
+            games = $user ? rows : rows.slice(0, 5);
         } catch (e: any) {
             // 401/403 means a stale cookie or unverified email — treat as
             // "no games to show" rather than a hard error banner.
@@ -119,7 +115,7 @@
 
     <section class="games-section">
         <header class="games-header">
-            <h3>Your games</h3>
+            <h3>{$user ? 'Your games' : 'Recent public games'}</h3>
             <div>
                 <a class="games-hint games-hint-link" href="/leaderboard">Leaderboard →</a>
                 <a class="games-hint games-hint-link" href="/browse">Browse public games →</a>
@@ -131,7 +127,11 @@
             <div class="empty-state" style="color: var(--color-danger);">{error}</div>
         {:else if !games.length}
             <div class="empty-state">
-                No games yet. <em>Start one above.</em>
+                {#if $user}
+                    No games yet. <em>Start one above.</em>
+                {:else}
+                    No public games yet — sign up and your first game is on us.
+                {/if}
             </div>
         {:else}
             <div class="games-list">
