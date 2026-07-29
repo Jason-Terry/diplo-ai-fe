@@ -47,6 +47,8 @@ export interface PowerUsage {
     /** Estimated provider cost in USD. Zero for models the catalog has no
      *  pricing entry for (avoids hard-failing on stale catalog data). */
     cost_usd: number;
+    /** JSON-repair retries this power needed. Absent on legacy records. */
+    repairs?: number;
 }
 
 export interface GameState {

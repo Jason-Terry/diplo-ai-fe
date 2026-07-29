@@ -120,7 +120,10 @@
     <section class="games-section">
         <header class="games-header">
             <h3>Your games</h3>
-            <a class="games-hint games-hint-link" href="/browse">Browse public games →</a>
+            <div>
+                <a class="games-hint games-hint-link" href="/leaderboard">Leaderboard →</a>
+                <a class="games-hint games-hint-link" href="/browse">Browse public games →</a>
+            </div>
         </header>
         {#if loading}
             <div class="empty-state">Loading games…</div>

@@ -1,13 +1,11 @@
 <script lang="ts">
     /**
      * /browse — public games the owner has marked visibility='public'.
-     * Logged-in users only (BE returns 401 otherwise).
+     * Open to everyone, no account needed.
      */
     import Header from '$lib/components/Header.svelte';
     import { listPublicGames, ApiError } from '$lib/api';
     import type { GameSummary } from '$lib/types';
-    import { user } from '$lib/stores/user';
-    import { loginModalOpen } from '$lib/stores/ui';
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
     import { ArrowLeft, Globe } from 'lucide-svelte';
@@ -16,12 +14,24 @@
     let loading = $state(true);
     let error = $state('');
 
+    type StatusFilter = 'all' | 'live' | 'finished';
+    let statusFilter = $state<StatusFilter>('all');
+
+    function isFinished(g: GameSummary): boolean {
+        return !!g.is_complete || ['complete', 'stalled', 'errored', 'abandoned'].includes(g.terminal_status);
+    }
+
+    let visibleGames = $derived(
+        games.filter((g) => {
+            if (statusFilter === 'live') return !isFinished(g);
+            if (statusFilter === 'finished') return isFinished(g);
+            return true;
+        })
+    );
+    let liveCount = $derived(games.filter((g) => !isFinished(g)).length);
+    let finishedCount = $derived(games.length - liveCount);
+
     async function refresh() {
-        if (!$user) {
-            games = [];
-            loading = false;
-            return;
-        }
         try {
             const data = await listPublicGames();
             games = data.games || [];
@@ -33,10 +43,6 @@
     }
 
     onMount(refresh);
-    $effect(() => {
-        void $user;
-        refresh();
-    });
 
     function relativeTime(unix: number): string {
         if (!unix) return '';
@@ -52,6 +58,7 @@
 
 <Header>
     {#snippet actions()}
+        <button class="btn-ghost small" onclick={() => goto('/leaderboard')}>Leaderboard</button>
         <button class="btn-ghost small" onclick={() => goto('/')}>
             <ArrowLeft size={12} /> Home
         </button>
@@ -63,16 +70,25 @@
         <Globe size={20} />
         <div>
             <h1>Public games</h1>
-            <p class="sub">Anyone logged in can spectate. The owner controls visibility.</p>
+            <p class="sub">Anyone can spectate — no account needed. The owner controls visibility.</p>
         </div>
     </header>
 
-    {#if !$user}
-        <div class="empty-state">
-            <p>You need to be logged in to browse public games.</p>
-            <button class="btn-primary small" onclick={() => loginModalOpen.set(true)}>Sign in</button>
+    {#if games.length}
+        <div class="filter-row" role="group" aria-label="Filter games by status">
+            <button class="filter-chip" class:active={statusFilter === 'all'} onclick={() => (statusFilter = 'all')}>
+                All ({games.length})
+            </button>
+            <button class="filter-chip" class:active={statusFilter === 'live'} onclick={() => (statusFilter = 'live')}>
+                In progress ({liveCount})
+            </button>
+            <button class="filter-chip" class:active={statusFilter === 'finished'} onclick={() => (statusFilter = 'finished')}>
+                Finished ({finishedCount})
+            </button>
         </div>
-    {:else if loading}
+    {/if}
+
+    {#if loading}
         <div class="empty-state">Loading…</div>
     {:else if error}
         <div class="empty-state" style="color: var(--color-danger);">{error}</div>
@@ -81,10 +97,14 @@
             <p>No public games yet.</p>
             <p class="hint">Start a game and switch it to <strong>Public</strong> in the share menu.</p>
         </div>
+    {:else if !visibleGames.length}
+        <div class="empty-state">
+            <p>No {statusFilter === 'live' ? 'in-progress' : 'finished'} public games right now.</p>
+        </div>
     {:else}
         <div class="games-list">
-            {#each games as g}
-                <a class="game-row" href={g.is_complete || g.terminal_status === 'complete' ? `/games/${g.game_id}/results` : `/games/${g.game_id}`}>
+            {#each visibleGames as g}
+                <a class="game-row" href={isFinished(g) ? `/games/${g.game_id}/results` : `/games/${g.game_id}`}>
                     <div class="game-row-meta">
                         <div class="game-id">#{g.game_id}</div>
                         <div class="game-sub">
@@ -126,6 +146,30 @@
         margin: 0.25rem 0 0;
         font-size: 0.82rem;
         color: var(--color-fg-muted);
+    }
+    .filter-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 1rem;
+    }
+    .filter-chip {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
+        color: var(--color-fg-muted);
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+    }
+    .filter-chip:hover {
+        border-color: var(--color-accent);
+    }
+    .filter-chip.active {
+        color: var(--color-fg);
+        border-color: var(--color-accent);
+        background: var(--color-surface-soft);
     }
     .empty-state {
         padding: 2rem;

@@ -85,9 +85,38 @@ export function setGameVisibility(
     });
 }
 
-/** Logged-in users only: list of all public games. */
+/** Public — no account needed: list of all public games. */
 export function listPublicGames(): Promise<{ games: GameSummary[] }> {
     return api('/api/games/public');
+}
+
+// ---------- Leaderboard ----------
+
+export interface LeaderboardRow {
+    model: string;
+    games: number;
+    wins: number;
+    draws: number;
+    win_rate: number;
+    survival_rate: number;
+    avg_centers: number;
+    commitments_declared: number;
+    commitments_kept: number;
+    commitments_broken: number;
+    commitments_unresolved: number;
+    /** null when the model has no resolved commitments yet. */
+    kept_rate: number | null;
+    cost_usd: number;
+    avg_cost_per_game: number;
+}
+
+/** Public — cross-game per-model stats over finished public games. */
+export function getLeaderboard(): Promise<{
+    models: LeaderboardRow[];
+    games_counted: number;
+    generated_at: number;
+}> {
+    return api('/api/leaderboard');
 }
 
 // ---------- Policies ----------

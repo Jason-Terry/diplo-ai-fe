@@ -494,12 +494,14 @@
     }
 
     // Manual refund button only when the viewer owns a free-trial game in
-    // a state where retry still makes sense.
+    // a state where retry still makes sense. A stalemate is a legitimate
+    // finish (draw), not a broken game — no refund.
     let canRefund = $derived(
         !!game &&
             game.is_owner &&
             game.free_trial &&
             game.terminal_status !== 'complete' &&
+            game.terminal_status !== 'stalled' &&
             game.terminal_status !== 'refunded'
     );
     let isOwner = $derived(!!game && game.is_owner);

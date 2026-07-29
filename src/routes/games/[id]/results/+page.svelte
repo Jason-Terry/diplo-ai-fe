@@ -45,6 +45,13 @@
         }
         if (game.is_complete) {
             // No winner but complete → draw.
+            if (game.terminal_status === 'stalled') {
+                return {
+                    kind: 'draw',
+                    label: 'Draw — stalemate',
+                    detail: 'No supply center changed hands for 5 years; the game was called.'
+                };
+            }
             return { kind: 'draw', label: 'Draw', detail: 'Game ended without a solo winner.' };
         }
         if (game.terminal_status === 'errored') {
