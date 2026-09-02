@@ -36,6 +36,15 @@
     let busy = $state(false);
     let error = $state('');
     let ws: WebSocket | null = null;
+    // Set true in onDestroy so any in-flight/pending reconnect attempts
+    // stop scheduling new sockets after the page unmounts.
+    let destroyed = false;
+    // Reconnect backoff state (reset on a clean open).
+    let reconnectAttempts = 0;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    const RECONNECT_BASE_MS = 1000;
+    const RECONNECT_MAX_MS = 30000;
+    const RECONNECT_MAX_ATTEMPTS = 8;
     // Selected unit id for the history modal (null = closed).
     let activeUnitId = $state<string | null>(null);
 
@@ -316,16 +325,35 @@
     }
 
     function connect() {
+        if (destroyed) return;
         ws?.close();
         ws = gameSocket(gameId);
+        ws.onopen = () => {
+            // Connection succeeded — reset backoff so a future drop starts
+            // retrying from the base delay again.
+            reconnectAttempts = 0;
+        };
         ws.onmessage = (evt) => {
             try {
                 const data = JSON.parse(evt.data);
                 onWsFrame(data);
             } catch { /* ignore non-JSON */ }
         };
+        ws.onerror = (evt) => {
+            console.error('Game WebSocket error', evt);
+        };
         ws.onclose = () => {
-            if (gameId) setTimeout(connect, 1000);
+            if (destroyed || !gameId) return;
+            if (reconnectAttempts >= RECONNECT_MAX_ATTEMPTS) {
+                pushToast('error', 'Lost connection to the game — live updates have stopped. Reload to reconnect.');
+                return;
+            }
+            const delay = Math.min(RECONNECT_BASE_MS * 2 ** reconnectAttempts, RECONNECT_MAX_MS);
+            reconnectAttempts += 1;
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null;
+                connect();
+            }, delay);
         };
     }
 
@@ -335,6 +363,11 @@
     });
 
     onDestroy(() => {
+        destroyed = true;
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
         ws?.close();
         ws = null;
     });
