@@ -17,3 +17,20 @@ jobs:
           deno-version: v2.7.14
       - run: deno install --allow-scripts --node-modules-dir=auto
       - run: deno task check
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.7.14
+      - run: deno install --allow-scripts --node-modules-dir=auto
+      - run: deno task build
+        env:
+          # Dummy values matching the Dockerfile's build-time defaults —
+          # CI has no live backend to point at, this just proves the
+          # `deno task build` the Dockerfile depends on actually succeeds.
+          VITE_API_BASE_URL: http://localhost:8421
+          VITE_WS_BASE: ws://localhost:8421
